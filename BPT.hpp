@@ -100,14 +100,7 @@ namespace sjtu {
 		int max_length = 0;
 		int len = 0;
 		T** head = nullptr;
-		/**
-		 * TODO
-		 * a type for actions of the elements of a vector, and you should write
-		 *   a class named const_iterator with same interfaces.
-		 */
-		/**
-		 * you can see RandomAccessIterator at CppReference for help.
-		 */
+
 		class const_iterator;
 
 		class iterator {
@@ -130,10 +123,6 @@ namespace sjtu {
 			using iterator_category = std::output_iterator_tag;
 
 		private:
-			/**
-			 * TODO add data members
-			 *   just add whatever you want.
-			 */
 		public:
 			T* ptr = nullptr;
 			vector<T>* ori = nullptr;
@@ -149,7 +138,6 @@ namespace sjtu {
 			}
 
 			iterator operator +(const int& n) const{
-				//TODO
 				iterator ans;
 				ans.ori = ori;
 				ans.ind = ind + n;
@@ -158,7 +146,6 @@ namespace sjtu {
 			}
 
 			iterator operator -(const int& n) const{
-				//TODO
 				iterator ans;
 				ans.ori = ori;
 				ans.ind = ind - n;
@@ -169,26 +156,20 @@ namespace sjtu {
 			// return the distance between two iterators,
 			// if these two iterators point to different vectors, throw invaild_iterator.
 			int operator -(const iterator& rhs) const{
-				//TODO
 				if(ori != rhs.ori)throw invalid_iterator();
 				return ind - rhs.ind;
 			}
 
 			iterator& operator +=(const int& n){
-				//TODO
 				ind += n;
 				ptr = ori->head[ind];
 			}
 
 			iterator& operator -=(const int& n){
-				//TODO
 				ind -= n;
 				ptr = ori->head[ind];
 			}
 
-			/**
-			 * TODO iter++
-			 */
 			iterator operator ++(int){
 				iterator temp;
 				temp.ori = ori;
@@ -199,18 +180,12 @@ namespace sjtu {
 				return temp;
 			}
 
-			/**
-			 * TODO ++iter
-			 */
 			iterator& operator ++(){
 				ind++;
 				ptr = ori->head[ind];
 				return *this;
 			}
 
-			/**
-			 * TODO iter--
-			 */
 			iterator operator --(int){
 				iterator temp;
 				temp.ori = ori;
@@ -221,18 +196,12 @@ namespace sjtu {
 				return temp;
 			}
 
-			/**
-			 * TODO --iter
-			 */
 			iterator& operator --(){
 				ind--;
 				ptr = ori->head[ind];
 				return *this;
 			}
 
-			/**
-			 * TODO *it
-			 */
 			T& operator *() const{
 				return *ptr;
 			}
@@ -260,10 +229,6 @@ namespace sjtu {
 			}
 		};
 
-		/**
-		 * TODO
-		 * has same function as iterator, just for a const object.
-		 */
 		class const_iterator {
 		public:
 			using difference_type = std::ptrdiff_t;
@@ -273,7 +238,6 @@ namespace sjtu {
 			using iterator_category = std::output_iterator_tag;
 
 		private:
-			/*TODO*/
 			T* ptr = nullptr;
 			const vector<T>* ori = nullptr;
 			int ind = 0;
@@ -286,7 +250,6 @@ namespace sjtu {
 			}
 
 			const_iterator operator +(const int& n) const{
-				//TODO
 				iterator ans;
 				ans.ori = ori;
 				ans.ind = ind + n;
@@ -295,7 +258,6 @@ namespace sjtu {
 			}
 
 			const_iterator operator -(const int& n) const{
-				//TODO
 				iterator ans;
 				ans.ori = ori;
 				ans.ind = ind - n;
@@ -306,26 +268,20 @@ namespace sjtu {
 			// return the distance between two iterators,
 			// if these two iterators point to different vectors, throw invaild_iterator.
 			int operator -(const iterator& rhs) const{
-				//TODO
 				if(ori != rhs.ori)throw invalid_iterator();
 				return ind - rhs.ind;
 			}
 
 			const_iterator& operator +=(const int& n){
-				//TODO
 				ind += n;
 				ptr = &(ori->head[ind]);
 			}
 
 			const_iterator& operator -=(const int& n){
-				//TODO
 				ind -= n;
 				ptr = &(ori->head[ind]);
 			}
 
-			/**
-			 * TODO iter++
-			 */
 			const_iterator operator ++(int){
 				iterator temp;
 				temp.ori = ori;
@@ -336,18 +292,12 @@ namespace sjtu {
 				return temp;
 			}
 
-			/**
-			 * TODO ++iter
-			 */
 			const_iterator operator ++(){
 				ind++;
 				ptr = ori->head[ind];
 				return *this;
 			}
 
-			/**
-			 * TODO iter--
-			 */
 			const_iterator operator --(int){
 				iterator temp;
 				temp.ori = ori;
@@ -358,18 +308,12 @@ namespace sjtu {
 				return temp;
 			}
 
-			/**
-			 * TODO --iter
-			 */
 			const_iterator& operator --(){
 				ind--;
 				ptr = &(ori->head[ind]);
 				return *this;
 			}
 
-			/**
-			 * TODO *it
-			 */
 			const T& operator *() const{
 				return *ptr;
 			}
@@ -397,10 +341,6 @@ namespace sjtu {
 			}
 		};
 
-		/**
-		 * TODO Constructs
-		 * At least two: default constructor, copy constructor
-		 */
 		vector(){
 			head = new T* [2];
 			head[0] = head[1] = nullptr;
@@ -416,17 +356,11 @@ namespace sjtu {
 			for(int i = 0; i < len; i++)head[i] = new T(*(other.head[i]));
 		}
 
-		/**
-		 * TODO Destructor
-		 */
 		~vector(){
 			for(int i = 0; i <= max_length; i++)delete head[i];
 			delete[]head;
 		}
 
-		/**
-		 * TODO Assignment operator
-		 */
 		vector& operator =(const vector& other){
 			if(this == &other)return *this;
 			for(int i = 0; i < len; i++)delete head[i];
