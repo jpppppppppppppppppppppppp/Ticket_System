@@ -32,6 +32,7 @@ sjtu::map<my_string<25>, int>loginuser;
 
 
 int main(){
+	freopen("../testcases/basic_2/1.in","r",stdin);
 	while (true){
 		if(std::cin.eof()){
 			break;
@@ -128,7 +129,7 @@ int main(){
 				auto ans = userbank.Find(user_name);
 				if(ans.empty())flag = false;
 				if(flag){
-					if(ans.front()->privilege <= loginuser[cur_name]){
+					if(ans.front()->privilege < loginuser[cur_name] or cc == uu){
 						user* u = ans.front();
 						cout << timestamp << ' ' << uu << ' ' << u->name << ' ' << u->mailAddr << ' ' << u->privilege << '\n';
 					}
@@ -139,7 +140,7 @@ int main(){
 				std::string line;
 				getline(std::cin,line);
 				line.append(" ");
-				std::string cc,uu,pp,nn,mm;int gg=0;
+				std::string cc,uu,pp,nn,mm;int gg=-1;
 				opt2.clear();
 				for(int i = 1; i < line.length(); ++i){
 					if(line[i] == ' '){
@@ -177,7 +178,17 @@ int main(){
 						opt2 += line[i];
 					}
 				}
-
+				my_string<25>cur_name(cc),user_name(uu);
+				auto ans = userbank.Find(user_name);
+				if(loginuser.find(cur_name)!=loginuser.end() and !ans.empty() and (loginuser[cur_name]>ans.front()->privilege or cc == uu) and gg<loginuser[cur_name]){
+					user * u = ans.front();
+					if(!pp.empty())strcpy(u->password.ch,pp.c_str());
+					if(!nn.empty())strcpy(u->name.ch,nn.c_str());
+					if(!mm.empty())strcpy(u->mailAddr.ch,mm.c_str());
+					if(gg>=0)u->privilege = gg;
+					if(loginuser.find(user_name)!=loginuser.end())loginuser[user_name] = u->privilege;
+					cout << timestamp << ' ' << uu << ' ' << u->name << ' ' << u->mailAddr << ' ' << u->privilege << '\n';
+				}else cout << timestamp << " -1\n";
 			}
 			else if(opt == "exit"){
 				cout << timestamp << " bye\n";
