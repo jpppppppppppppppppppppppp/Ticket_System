@@ -629,7 +629,7 @@ public:
 	std::fstream io;
 	std::fstream other;
 	std::string filename;
-	io_sys(std::string& file):filename(file){
+	io_sys(std::string& file):filename("temp/" + file){
 		io.open(filename);
 		if(!io.good()){
 			io.open(filename, std::ios::out);

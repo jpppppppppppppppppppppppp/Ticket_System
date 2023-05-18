@@ -128,7 +128,18 @@ inline int between(const my_date& lhs, const my_date& rhs){
 	return ans;
 }
 struct date_time{
-	int mm,dd,hh,mi;
+	int mm=0,dd=0,hh=0,mi=0;
+	date_time(){}
+	date_time(my_date& mydate, my_time& mytime){
+		mm = mydate.mm;
+		dd = mydate.dd;
+		hh = mytime.hh;
+		mi = mytime.mi;
+		dd += hh/24;
+		hh /= 24;
+		if(mm == 6 and dd >= 31)mm = 7, dd -= 30;
+		if(mm == 7 and dd >= 32)mm = 8, dd -= 31;
+	}
 };
 struct train {
 	int stationNum = 0;
@@ -183,7 +194,66 @@ struct seats{
 	}
 };
 BPT<dateAndtrainID,seats>allseats("seats");
-
+struct order{
+	my_string<10>statue;
+	int time=0;
+	my_string<25>trainID;
+	my_string<25>from;
+	my_string<25>to;
+	date_time begin;
+	date_time end;
+	long long price=0;
+	int num=0;
+	order(){}
+	order(const std::string& now_statue, std::string& timeStamp, my_string<25>&train, my_string<25>&f, my_string<25>&t, my_date& day, my_time& t1, my_time& t2, long long pricetopay, int sum){
+		statue = now_statue;
+		std::string TimeStamp = timeStamp.substr(0,timeStamp.length()-2);
+		time = str_to_int(TimeStamp);
+		trainID = train;
+		from = f;
+		to = t;
+		begin = date_time(day, t1);
+		end = date_time(day, t2);
+		price = pricetopay;
+		num = sum;
+	}
+	inline friend bool operator < (const order & lhs,const order & rhs){
+		return lhs.time > rhs.time;
+	}
+	inline friend bool operator == (const order & lhs,const order & rhs){
+		return lhs.time == rhs.time;
+	}
+};
+Multiple_BPT<my_string<25>, order>orders("orders");
+struct pend{
+	my_string<25>username;
+	int time=0;
+	my_string<25>from;
+	my_string<25>to;
+	date_time begin;
+	date_time end;
+	long long price=0;
+	int num=0;
+	pend(){}
+	pend(std::string& timeStamp, my_string<25>&user, my_string<25>&f, my_string<25>&t, my_date& day, my_time& t1, my_time& t2, long long pricetopay, int sum){
+		std::string TimeStamp = timeStamp.substr(0,timeStamp.length()-2);
+		time = str_to_int(TimeStamp);
+		username = user;
+		from = f;
+		to = t;
+		begin = date_time(day, t1);
+		end = date_time(day, t2);
+		price = pricetopay;
+		num = sum;
+	}
+	inline friend bool operator < (const pend & lhs,const pend & rhs){
+		return lhs.time > rhs.time;
+	}
+	inline friend bool operator == (const pend & lhs,const pend & rhs){
+		return lhs.time == rhs.time;
+	}
+};
+Multiple_BPT<my_string<25>, pend>waiting("waiting");
 int main(){
 	freopen("../testcases/basic_2/1.in","r",stdin);
 	while (true){
@@ -450,16 +520,18 @@ int main(){
 				train * tr = trainbank.Find(trainID);
 				my_string<25>from(ff);
 				my_string<25>to(tt);
-				int ind1=0,ind2=0;
+				int ind1=-1,ind2=-1;
 				if(loginuser.find(username)!=loginuser.end()){
 					if(tr == nullptr)flag = false;
 					else{
 						if(!tr->is_release)flag = false;
 						else{
-							ind1 = lower_bound(tr->stations,tr->stations + tr->stationNum, from) - tr->stations;
-							ind2 = lower_bound(tr->stations,tr->stations + tr->stationNum, to) - tr->stations;
-							if(!(tr->stations[ind1] == from))flag = false;
-							if(!(tr->stations[ind2] == to))flag = false;
+							for(int i = 0; i < tr->stationNum; ++i){
+								if(tr->stations[i] == from)ind1 = i;
+								if(tr->stations[i] == to)ind2 = i;
+							}
+							if(ind1<0)flag = false;
+							if(ind2<0)flag = false;
 							if(flag and ind1 >= ind2)flag = false;
 						}
 					}
@@ -491,12 +563,27 @@ int main(){
 							for(int i = ind1; i < ind2; ++i){
 								s->seat[i] -= seatNeed;
 							}
-
+							long long priceToPay = 1ll * seatNeed * (tr->prices[ind2] - tr->prices[ind1]);
+							cout << timestamp << ' ' << priceToPay << '\n';
+							order new_order("success", timestamp, trainID, from, to, useless, tr->leaveTime[ind1], tr->arriveTime[ind2], priceToPay, seatNeed);
+							orders.Insert(username, new_order);
+						}
+						else{
+							if(q){
+								long long priceToPay = 1ll * seatNeed * (tr->prices[ind2] - tr->prices[ind1]);
+								order new_order("pending", timestamp, trainID, from, to, useless, tr->leaveTime[ind1], tr->arriveTime[ind2], priceToPay, seatNeed);
+								orders.Insert(username, new_order);
+								pend new_pend(timestamp, username, from, to, useless, tr->leaveTime[ind1], tr->arriveTime[ind2], priceToPay, seatNeed);
+								waiting.Insert(trainID, new_pend);
+								cout << timestamp << " queue\n";
+							}else flag = false;
 						}
 					}
 				}
+				if(!flag)cout << timestamp << " -1\n";
+			}
+			else if(opt == "query_ticket"){
 
-				cout << timestamp << " -1\n";
 			}
 			else if(opt == "exit"){
 				cout << timestamp << " bye\n";
