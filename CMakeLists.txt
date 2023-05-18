@@ -5,4 +5,7 @@ set(CMAKE_CXX_STANDARD 14)
 
 add_executable(Ticket_System_master
         main.cpp
-        BPT.hpp)
+        BPT.hpp
+        map.hpp
+        utility.hpp
+        exceptions.hpp)

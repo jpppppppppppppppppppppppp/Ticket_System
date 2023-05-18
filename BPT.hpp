@@ -5,6 +5,7 @@
 #include <fstream>
 #include <cstring>
 #include <ctime>
+#include "exceptions.hpp"
 
 using std::cout;
 using std::cin;
@@ -27,6 +28,13 @@ struct my_string {
 
 	friend bool operator ==(const my_string& lhs, const my_string& rhs){
 		return strcmp(lhs.ch, rhs.ch) == 0;
+	}
+	friend bool operator ==(const my_string& lhs, const std::string& rhs){
+		return strcmp(lhs.ch, rhs.c_str()) == 0;
+	}
+	friend std::ostream& operator << (std::ostream & io, const my_string& me){
+		io << me.ch;
+		return io;
 	}
 };
 
@@ -65,35 +73,6 @@ T1* upper_bound(T1* begin, T1* end, const T2& tofind)
 }
 
 namespace sjtu {
-
-	class exception {
-	protected:
-		const std::string variant = "";
-		std::string detail = "";
-	public:
-		exception() {}
-		exception(const exception &ec) : variant(ec.variant), detail(ec.detail) {}
-		virtual std::string what() {
-			return variant + " " + detail;
-		}
-	};
-
-	class index_out_of_bound : public exception {
-		/* __________________________ */
-	};
-
-	class runtime_error : public exception {
-		/* __________________________ */
-	};
-
-	class invalid_iterator : public exception {
-		/* __________________________ */
-	};
-
-	class container_is_empty : public exception {
-		/* __________________________ */
-	};
-
 	template<typename T>
 	class vector {
 	public:
@@ -943,12 +922,11 @@ public:
 		kv(const k& K, const v& V) : key(K), value(V){}
 
 		inline friend bool operator ==(const kv& lhs, const kv& rhs){
-			return lhs.key == rhs.key and lhs.value == rhs.value;
+			return lhs.key == rhs.key;
 		}
 
 		inline friend bool operator <(const kv& lhs, const kv& rhs){
-			if(!(lhs.key == rhs.key)) return lhs.key < rhs.key;
-			else return lhs.value < rhs.value;
+			return lhs.key < rhs.key;
 		}
 
 		inline friend bool operator <(const kv& lhs, const k& rhs){
@@ -1069,8 +1047,8 @@ public:
 		}
 	}
 
-	sjtu::vector<v> Find(k& key){
-		sjtu::vector<v> ans;
+	sjtu::vector<v*> Find(k& key){
+		sjtu::vector<v*> ans;
 		if(root){
 			block* tar = my_file.read(root);
 			while (true){
@@ -1082,7 +1060,7 @@ public:
 						break;
 					}
 					for(int i = pos; i < end; ++i){
-						ans.push_back(tar->keys[i].value);
+						ans.push_back(&(tar->keys[i].value));
 					}
 					if(tar->next){
 						tar = my_file.read(tar->next);
@@ -1228,6 +1206,10 @@ public:
 				my_file.write(new_root, new_root->index);
 			}
 		}
+	}
+
+	bool empty(){
+		return root == 0;
 	}
 };
 
