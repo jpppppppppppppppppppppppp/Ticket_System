@@ -622,7 +622,7 @@ public:
 	};
 	list_node * head;
 	list_node * tail;
-	static const int hash_size = 100;
+	static const int hash_size = 200;
 	int block_num = 0;
 	int root = 0;
 	struct hash_node{
@@ -930,7 +930,7 @@ public:
 template <typename k, typename v>
 class BPT {
 public:
-	static constexpr int N = 50;
+	static constexpr int N = 30;
 	static constexpr int M = N / 2;
 
 	struct kv {
@@ -1067,7 +1067,7 @@ public:
 		}
 	}
 
-	virtual v* Find(k& key){
+	v* Find(k& key){
 		v* ans = nullptr;
 		if(root){
 			block* tar = my_file.read(root);
@@ -1230,7 +1230,7 @@ public:
 template <typename k, typename v>
 class Multiple_BPT{
 public:
-	static constexpr int N = 50;
+	static constexpr int N = 30;
 	static constexpr int M = N / 2;
 
 	struct kv {
@@ -1422,7 +1422,56 @@ public:
 		}
 		return ans;
 	}
-
+	int Findans(k& key){
+		int ans=0;
+		if(root){
+			block* tar = my_file.read(root);
+			while (true){
+				int pos = lower_bound(tar->keys, tar->keys + tar->size, key) - tar->keys;
+				if(pos == tar->size)return ans;
+				if(tar->is_leaf){
+					int end = upper_bound(tar->keys, tar->keys + tar->size, key) - tar->keys;
+					if(pos == end){
+						break;
+					}
+					ans += end - pos;
+					if(tar->next){
+						tar = my_file.read(tar->next);
+					}
+					else break;
+				}
+				else{
+					tar = my_file.read(tar->children[pos]);
+				}
+			}
+		}
+		return ans;
+	}
+	void Finddirect(k& key){
+		if(root){
+			block* tar = my_file.read(root);
+			while (true){
+				int pos = lower_bound(tar->keys, tar->keys + tar->size, key) - tar->keys;
+				if(pos == tar->size)return;
+				if(tar->is_leaf){
+					int end = upper_bound(tar->keys, tar->keys + tar->size, key) - tar->keys;
+					if(pos == end){
+						break;
+					}
+					for(int i = pos; i < end; ++i){
+						cout << tar->keys[i].value << '\n';
+					}
+					if(tar->next){
+						tar = my_file.read(tar->next);
+					}
+					else break;
+				}
+				else{
+					tar = my_file.read(tar->children[pos]);
+				}
+			}
+		}
+	}
 	void borrow_right(block* father, block* left_children, block* right_children, int ind){
 		left_children->children[left_children->size] = right_children->children[0];
 		left_children->keys[left_children->size] = right_children->keys[0];
