@@ -622,7 +622,7 @@ public:
 	};
 	list_node * head;
 	list_node * tail;
-	static const int hash_size = 50;
+	static const int hash_size = 2000;
 	int block_num = 0;
 	int root = 0;
 	struct hash_node{
