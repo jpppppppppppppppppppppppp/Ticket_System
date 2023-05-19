@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(Ticket_System_master)
+project(code)
 
 set(CMAKE_CXX_STANDARD 14)
 
