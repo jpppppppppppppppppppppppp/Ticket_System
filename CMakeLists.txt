@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.16)
-project(Ticket_System_master)
+project(code)
 
 set(CMAKE_CXX_STANDARD 14)
 
-add_executable(Ticket_System_master
+add_executable(code
         src/main.cpp
         src/BPT.hpp
         src/map.hpp
