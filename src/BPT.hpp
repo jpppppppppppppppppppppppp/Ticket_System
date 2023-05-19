@@ -930,7 +930,7 @@ public:
 template <typename k, typename v>
 class BPT {
 public:
-	static constexpr int N = 200;
+	static constexpr int N = 4000 / sizeof(k);
 	static constexpr int M = N / 2;
 
 	struct kv {
@@ -1230,7 +1230,7 @@ public:
 template <typename k, typename v>
 class Multiple_BPT{
 public:
-	static constexpr int N = 200;
+	static constexpr int N = 4000 / sizeof(k);
 	static constexpr int M = N / 2;
 
 	struct kv {
