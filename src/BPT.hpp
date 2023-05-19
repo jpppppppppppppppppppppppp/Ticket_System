@@ -622,7 +622,7 @@ public:
 	};
 	list_node * head;
 	list_node * tail;
-	static const int hash_size = 200;
+	static const int hash_size = 50;
 	int block_num = 0;
 	int root = 0;
 	struct hash_node{
@@ -930,7 +930,7 @@ public:
 template <typename k, typename v>
 class BPT {
 public:
-	static constexpr int N = 300;
+	static constexpr int N = 200;
 	static constexpr int M = N / 2;
 
 	struct kv {
@@ -1230,7 +1230,7 @@ public:
 template <typename k, typename v>
 class Multiple_BPT{
 public:
-	static constexpr int N = 300;
+	static constexpr int N = 200;
 	static constexpr int M = N / 2;
 
 	struct kv {
