@@ -108,7 +108,7 @@ public:
 	};
 	list_node * head;
 	list_node * tail;
-	static const int hash_size = 20;
+
 	int block_num = 0;
 	int root = 0;
 	struct hash_node{
@@ -117,7 +117,9 @@ public:
 		hash_node * next= nullptr;
 		hash_node(int ii, list_node * ll, hash_node* hh):index(ii), address(ll), next(hh){}
 		hash_node(){}
-	}hash_map[hash_size];
+	};
+	static const int hash_size = 1024 * 1024 / sizeof(hash_node);
+	hash_node hash_map[hash_size];
 	int hash_map_size = 0;
 	std::fstream io;
 	std::fstream other;
