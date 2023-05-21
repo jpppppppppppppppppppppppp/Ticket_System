@@ -6,7 +6,7 @@
 #include <cstring>
 #include <ctime>
 #include "exceptions.hpp"
-#include <vector>
+
 using std::cout;
 using std::cin;
 
@@ -92,7 +92,521 @@ T1* upper_bound(T1* begin, T1* end, const T2& tofind)
 	return begin;
 }
 
+namespace sjtu {
+	template<typename T>
+	class vector {
+	public:
+		int max_length = 0;
+		int len = 0;
+		T** head = nullptr;
 
+		class const_iterator;
+
+		class iterator {
+			// The following code is written for the C++ type_traits library.
+			// Type traits is a C++ feature for describing certain properties of a type.
+			// For instance, for an iterator, iterator::value_type is the type that the
+			// iterator points to.
+			// STL algorithms and containers may use these type_traits (e.g. the following
+			// typedef) to work properly. In particular, without the following code,
+			// @code{std::sort(iter, iter1);} would not compile.
+			// See these websites for more information:
+			// https://en.cppreference.com/w/cpp/header/type_traits
+			// About value_type: https://blog.csdn.net/u014299153/article/details/72419713
+			// About iterator_category: https://en.cppreference.com/w/cpp/iterator
+		public:
+			using difference_type = std::ptrdiff_t;
+			using value_type = T;
+			using pointer = T*;
+			using reference = T&;
+			using iterator_category = std::output_iterator_tag;
+
+		private:
+		public:
+			T* ptr = nullptr;
+			vector<T>* ori = nullptr;
+			int ind = 0;
+			/**
+			 * return a new iterator which pointer n-next elements
+			 * as well as operator-
+			 */
+			iterator(T* pp = nullptr, vector<T>* oo = nullptr, int ii = 0){
+				ptr = pp;
+				ori = oo;
+				ind = ii;
+			}
+
+			iterator operator +(const int& n) const{
+				iterator ans;
+				ans.ori = ori;
+				ans.ind = ind + n;
+				ans.ptr = (ori->head)[ans.ind];
+				return ans;
+			}
+
+			iterator operator -(const int& n) const{
+				iterator ans;
+				ans.ori = ori;
+				ans.ind = ind - n;
+				ans.ptr = (ori->head)[ans.ind];
+				return ans;
+			}
+
+			// return the distance between two iterators,
+			// if these two iterators point to different vectors, throw invaild_iterator.
+			int operator -(const iterator& rhs) const{
+				if(ori != rhs.ori)throw invalid_iterator();
+				return ind - rhs.ind;
+			}
+
+			iterator& operator +=(const int& n){
+				ind += n;
+				ptr = ori->head[ind];
+			}
+
+			iterator& operator -=(const int& n){
+				ind -= n;
+				ptr = ori->head[ind];
+			}
+
+			iterator operator ++(int){
+				iterator temp;
+				temp.ori = ori;
+				temp.ind = ind;
+				temp.ptr = ptr;
+				ind++;
+				ptr = ori->head[ind];
+				return temp;
+			}
+
+			iterator& operator ++(){
+				ind++;
+				ptr = ori->head[ind];
+				return *this;
+			}
+
+			iterator operator --(int){
+				iterator temp;
+				temp.ori = ori;
+				temp.ind = ind;
+				temp.ptr = ptr;
+				ind--;
+				ptr = ori->head[ind];
+				return temp;
+			}
+
+			iterator& operator --(){
+				ind--;
+				ptr = ori->head[ind];
+				return *this;
+			}
+
+			T& operator *() const{
+				return *ptr;
+			}
+
+			/**
+			 * a operator to check whether two iterators are same (pointing to the same memory address).
+			 */
+			bool operator ==(const iterator& rhs) const{
+				return ptr == rhs.ptr;
+			}
+
+			bool operator ==(const const_iterator& rhs) const{
+				return ptr == rhs.ptr;
+			}
+
+			/**
+			 * some other operator for iterator.
+			 */
+			bool operator !=(const iterator& rhs) const{
+				return ptr != rhs.ptr;
+			}
+
+			bool operator !=(const const_iterator& rhs) const{
+				return ptr != rhs.ptr;
+			}
+		};
+
+		class const_iterator {
+		public:
+			using difference_type = std::ptrdiff_t;
+			using value_type = T;
+			using pointer = T*;
+			using reference = T&;
+			using iterator_category = std::output_iterator_tag;
+
+		private:
+			T* ptr = nullptr;
+			const vector<T>* ori = nullptr;
+			int ind = 0;
+
+		public:
+			const_iterator(T* pp = nullptr, const vector<T>* oo = nullptr, int ii = 0){
+				ptr = pp;
+				ori = oo;
+				ind = ii;
+			}
+
+			const_iterator operator +(const int& n) const{
+				iterator ans;
+				ans.ori = ori;
+				ans.ind = ind + n;
+				ans.ptr = &((ori->head)[ans.ind]);
+				return ans;
+			}
+
+			const_iterator operator -(const int& n) const{
+				iterator ans;
+				ans.ori = ori;
+				ans.ind = ind - n;
+				ans.ptr = &((ori->head)[ans.ind]);
+				return ans;
+			}
+
+			// return the distance between two iterators,
+			// if these two iterators point to different vectors, throw invaild_iterator.
+			int operator -(const iterator& rhs) const{
+				if(ori != rhs.ori)throw invalid_iterator();
+				return ind - rhs.ind;
+			}
+
+			const_iterator& operator +=(const int& n){
+				ind += n;
+				ptr = &(ori->head[ind]);
+			}
+
+			const_iterator& operator -=(const int& n){
+				ind -= n;
+				ptr = &(ori->head[ind]);
+			}
+
+			const_iterator operator ++(int){
+				iterator temp;
+				temp.ori = ori;
+				temp.ind = ind;
+				temp.ptr = ptr;
+				ind++;
+				ptr = &(ori->head[ind]);
+				return temp;
+			}
+
+			const_iterator operator ++(){
+				ind++;
+				ptr = ori->head[ind];
+				return *this;
+			}
+
+			const_iterator operator --(int){
+				iterator temp;
+				temp.ori = ori;
+				temp.ind = ind;
+				temp.ptr = ptr;
+				ind--;
+				ptr = &(ori->head[ind]);
+				return temp;
+			}
+
+			const_iterator& operator --(){
+				ind--;
+				ptr = &(ori->head[ind]);
+				return *this;
+			}
+
+			const T& operator *() const{
+				return *ptr;
+			}
+
+			/**
+			 * a operator to check whether two iterators are same (pointing to the same memory address).
+			 */
+			bool operator ==(const iterator& rhs) const{
+				return ptr == rhs.ptr;
+			}
+
+			bool operator ==(const const_iterator& rhs) const{
+				return ptr == rhs.ptr;
+			}
+
+			/**
+			 * some other operator for iterator.
+			 */
+			bool operator !=(const iterator& rhs) const{
+				return ptr != rhs.ptr;
+			}
+
+			bool operator !=(const const_iterator& rhs) const{
+				return ptr != rhs.ptr;
+			}
+		};
+
+		vector(){
+			head = new T* [2];
+			head[0] = head[1] = nullptr;
+			len = 0;
+			max_length = 1;
+		}
+
+		vector(const vector& other){
+			head = new T* [other.max_length + 1];
+			for(int tt = 0; tt <= other.max_length; tt++)head[tt] = nullptr;
+			len = other.len;
+			max_length = other.max_length;
+			for(int i = 0; i < len; i++)head[i] = new T(*(other.head[i]));
+		}
+
+		~vector(){
+			for(int i = 0; i <= max_length; i++)delete head[i];
+			delete[]head;
+		}
+
+		vector& operator =(const vector& other){
+			if(this == &other)return *this;
+			for(int i = 0; i < len; i++)delete head[i];
+			delete[]head;
+			head = new T* [other.max_length + 1];
+			for(int tt = 0; tt <= other.max_length; tt++)head[tt] = nullptr;
+			len = other.len;
+			max_length = other.max_length;
+			for(int i = 0; i < len; i++)head[i] = new T(*(other.head[i]));
+			return *this;
+		}
+
+		/**
+		 * assigns specified element with bounds checking
+		 * throw index_out_of_bound if pos is not in [0, size)
+		 */
+		T& at(const size_t& pos){
+			if(pos < len)return *(head[pos]);
+			else throw index_out_of_bound();
+		}
+
+		const T& at(const size_t& pos) const{
+			if(pos < len)return *(head[pos]);
+			else throw index_out_of_bound();
+		}
+
+		/**
+		 * assigns specified element with bounds checking
+		 * throw index_out_of_bound if pos is not in [0, size)
+		 * !!! Pay attentions
+		 *   In STL this operator does not check the boundary but I want you to do.
+		 */
+		T& operator [](const size_t& pos){
+			if(pos < len)return *(head[pos]);
+			else throw index_out_of_bound();
+		}
+
+		const T& operator [](const size_t& pos) const{
+			if(pos < len)return *(head[pos]);
+			else throw index_out_of_bound();
+		}
+
+		/**
+		 * access the first element.
+		 * throw container_is_empty if size == 0
+		 */
+		const T& front() const{
+			if(len == 0)throw container_is_empty();
+			else return *(head[0]);
+		}
+
+		/**
+		 * access the last element.
+		 * throw container_is_empty if size == 0
+		 */
+		const T& back() const{
+			if(len == 0)throw container_is_empty();
+			else return *(head[len - 1]);
+		}
+
+		/**
+		 * returns an iterator to the beginning.
+		 */
+		iterator begin(){
+			iterator ans(head[0], this, 0);
+			return ans;
+		}
+
+		const_iterator cbegin() const{
+			const_iterator ans(head[0], this, 0);
+			return ans;
+		}
+
+		/**
+		 * returns an iterator to the end.
+		 */
+		iterator end(){
+			iterator ans((head[len]), this, len);
+			return ans;
+		}
+
+		const_iterator cend() const{
+			const_iterator ans((head[len]), this, len);
+			return ans;
+		}
+
+		/**
+		 * checks whether the container is empty
+		 */
+		bool empty() const{ return len == 0; }
+
+		/**
+		 * returns the number of elements
+		 */
+		size_t size() const{ return len; }
+
+		/**
+		 * clears the contents
+		 */
+		void clear(){
+			delete[]head;
+			for(int i = 0; i < max_length; i++)delete head[i];
+			delete[]head;
+			head = new T* [2];
+			head[0] = nullptr;
+			head[1] = nullptr;
+			len = 0;
+			max_length = 1;
+		}
+
+		/**
+		 * inserts value before pos
+		 * returns an iterator pointing to the inserted value.
+		 */
+		iterator insert(iterator pos, const T& value){
+			if(len == max_length){
+				max_length *= 2;
+				T** n_head = new T* [max_length + 1];
+				for(int tt = 0; tt <= max_length; tt++)n_head[tt] = nullptr;
+				int i = 0;
+				for(iterator b = this->begin(); (int) ((b + i) - pos) < 0; i++){
+					n_head[i] = head[i];
+				}
+				int n = i;
+				n_head[i] = new T(value);
+				for(iterator b = this->begin(), e = this->end(); (int) ((b + i) - e < 0); i++){
+					n_head[i + 1] = head[i];
+				}
+				delete[]head;
+				len++;
+				head = n_head;
+				return iterator(head[n], this, n);
+			}
+			else{
+				int i = 0;
+				len++;
+				for(iterator e = this->end(); (int) ((e - i) - pos) > 0; i++){
+					head[len - i] = head[len - i - 1];
+				}
+				head[len - i] = new T(value);
+				return iterator(head[len - i], this, len - i);
+			}
+		}
+
+
+		/**
+		 * inserts value at index ind.
+		 * after inserting, this->at(ind) == value
+		 * returns an iterator pointing to the inserted value.
+		 * throw index_out_of_bound if ind > size (in this situation ind can be size because after inserting the size will increase 1.)
+		 */
+		iterator insert(const size_t& ind, const T& value){
+			if(ind < 0 or ind > len)throw index_out_of_bound();
+			if(len == max_length){
+				max_length *= 2;
+				T** n_head = new T* [max_length + 1];
+				for(int tt = 0; tt <= max_length; tt++)n_head[tt] = nullptr;
+				int i = 0;
+				for(; (int) (i - ind) < 0; i++){
+					n_head[i] = head[i];
+				}
+				int n = i;
+				n_head[i] = new T(value);
+				for(; i <= len; i++){
+					n_head[i + 1] = head[i];
+				}
+				delete[]head;
+				len++;
+				head = n_head;
+				return iterator(head[n], this, n);
+			}
+			else{
+				int i = 0;
+				len++;
+				for(; (int) (len - i - ind - 1) >= 0; i++){
+					head[len - i] = head[len - i - 1];
+				}
+				head[len - i] = new T(value);
+				return iterator(head[len - i], this, len - i);
+			}
+		}
+
+		/**
+		 * removes the element at pos.
+		 * return an iterator pointing to the following element.
+		 * If the iterator pos refers the last element, the end() iterator is returned.
+		 */
+		iterator erase(iterator pos){
+			len--;
+			int n = pos.ind;
+			int i = n;
+			delete head[n];
+			head[n] = nullptr;
+			for(iterator b = this->begin(), e = this->end(); (int) ((b + i) - e) <= 0; i++){
+				head[i] = head[i + 1];
+			}
+			return iterator(head[n], this, n);
+
+		}
+
+		/**
+		 * removes the element with index ind.
+		 * return an iterator pointing to the following element.
+		 * throw index_out_of_bound if ind >= size
+		 */
+		iterator erase(const size_t& ind){
+			len--;
+			delete head[ind];
+			head[ind] = nullptr;
+			for(int i = ind; i <= len; i++){
+				head[i] = head[i + 1];
+			}
+			return iterator(head[ind], this, ind);
+
+		}
+
+		/**
+		 * adds an element to the end.
+		 */
+		void push_back(const T& value){
+			if(len == max_length){
+				max_length *= 2;
+				T** n_head = new T* [max_length + 1];
+				for(int tt = 0; tt <= max_length; tt++)n_head[tt] = nullptr;
+				for(int i = 0; i < len; i++){
+					n_head[i] = head[i];
+				}
+				delete[]head;
+				head = n_head;
+			}
+			if(head == nullptr)head = new T*, len++, head[0] = new T(value);
+			else head[len++] = new T(value);
+		}
+
+		/**
+		 * remove the last element from the end.
+		 * throw container_is_empty if size() == 0
+		 */
+		void pop_back(){
+			if(len == 0)throw container_is_empty();
+			delete head[len - 1];
+			head[len - 1] = nullptr;
+			len--;
+
+		}
+	};
+}
 
 template<typename data, typename key>
 class io_sys {
@@ -852,8 +1366,8 @@ public:
 		}
 	}
 
-	std::vector<v> Find(k& key){
-		std::vector<v> ans;
+	sjtu::vector<v> Find(k& key){
+		sjtu::vector<v> ans;
 		if(root){
 			block* tar = my_file.read(root);
 			while (true){

@@ -2,7 +2,6 @@
 #include "map.hpp"
 #include <iostream>
 #include <cstring>
-#include <vector>
 using std::cout;
 using std::cin;
 
@@ -14,8 +13,8 @@ inline int str_to_int(std::string & str){
 	}
 	return ans;
 }
-std::vector<std::string> parser(const std::string & str){
-	std::vector<std::string>ans;
+sjtu::vector<std::string> parser(const std::string & str){
+	sjtu::vector<std::string>ans;
 	std::string buffer;
 	for(auto ch:str){
 		if(ch == '|'){
@@ -556,11 +555,11 @@ int main(){
 					new_train.leaveTime[0] = my_time(information["-x"]);
 					new_train.arriveTime[0] = my_time(-1,-1);
 					new_train.type = information["-y"][0];
-					std::vector<std::string> ss = parser(information["-s"] + '|');
-					std::vector<std::string> pp = parser(information["-p"] + '|');
-					std::vector<std::string> tt = parser(information["-t"] + '|');
-					std::vector<std::string> oo = parser(information["-o"] + '|');
-					std::vector<std::string> dd = parser(information["-d"] + '|');
+					sjtu::vector<std::string> ss = parser(information["-s"] + '|');
+					sjtu::vector<std::string> pp = parser(information["-p"] + '|');
+					sjtu::vector<std::string> tt = parser(information["-t"] + '|');
+					sjtu::vector<std::string> oo = parser(information["-o"] + '|');
+					sjtu::vector<std::string> dd = parser(information["-d"] + '|');
 					new_train.beginSale = my_date(dd[0]);
 					new_train.endSale = my_date(dd[1]);
 					new_train.stations[0] = ss[0];
@@ -732,8 +731,8 @@ int main(){
 				if(pp.empty()) pp = "time";
 				if(pp == "time"){
 					sjtu::map<trainInforSortbyTime,int>alltrain;
-					std::vector<trainid >trainlist1 = stations.Find(from);
-					std::vector<trainid >trainlist2 = stations.Find(to);
+					sjtu::vector<trainid >trainlist1 = stations.Find(from);
+					sjtu::vector<trainid >trainlist2 = stations.Find(to);
 					int ptr1 = 0, ptr2 = 0;
 					while (ptr1 < trainlist1.size() and ptr2 < trainlist2.size()){
 						if(trainlist1[ptr1].trainID < trainlist2[ptr2].trainID){
@@ -775,8 +774,8 @@ int main(){
 				}else if(pp == "cost"){
 
 					sjtu::map<trainInforSortbyPrice, int> alltrain;
-					std::vector<trainid> trainlist1 = stations.Find(from);
-					std::vector<trainid> trainlist2 = stations.Find(to);
+					sjtu::vector<trainid> trainlist1 = stations.Find(from);
+					sjtu::vector<trainid> trainlist2 = stations.Find(to);
 					int ptr1 = 0, ptr2 = 0;
 					while (ptr1 < trainlist1.size() and ptr2 < trainlist2.size()){
 						if(trainlist1[ptr1].trainID < trainlist2[ptr2].trainID){
@@ -825,7 +824,7 @@ int main(){
 				cin >> opt2 >> user;
 				my_string<25>username(user);
 				if(loginuser.find(username)!=loginuser.end()){
-					std::vector<order>allorders = orders.Find(username);
+					sjtu::vector<order>allorders = orders.Find(username);
 					cout << timestamp << ' ' << allorders.size() << '\n';
 					for(int i=0;i<allorders.size();i++){
 						cout << allorders[i] << '\n';
@@ -856,7 +855,7 @@ int main(){
 				if(!nn.empty())n = str_to_int(nn);
 				my_string<25>username(uu);
 				if(loginuser.find(username)!=loginuser.end()){
-					std::vector<order> allorders = orders.Find(username);
+					sjtu::vector<order> allorders = orders.Find(username);
 					if(n <= allorders.size()){
 						order tar = allorders[n - 1];
 						int ind1 = 0, ind2 = 0;
@@ -874,7 +873,7 @@ int main(){
 							for(int i = ind1; i < ind2; ++i){
 								s->seat[i] += tar.num;
 							}
-							std::vector<pend> waitlist = waiting.Find(tar.trainID);
+							sjtu::vector<pend> waitlist = waiting.Find(tar.trainID);
 							for(int i = 0; i < waitlist.size(); ++i){
 								pend todo = waitlist[i];
 								if(todo.whichday == tar.whichday){
@@ -888,7 +887,7 @@ int main(){
 									}
 									if(min_seat >= todo.num){
 										my_string<25> waituser = todo.username;
-										std::vector<order> new_orderlist = orders.Find(waituser);
+										sjtu::vector<order> new_orderlist = orders.Find(waituser);
 										for(int j = 0; j < new_orderlist.size(); ++j){
 											if(new_orderlist[j].time == todo.time){
 												orders.Delete(waituser, new_orderlist[j]);
@@ -909,7 +908,7 @@ int main(){
 							orders.Delete(username, tar);
 							tar.statue = "refunded";
 							orders.Insert(username, tar);
-							std::vector<pend> waitlist = waiting.Find(tar.trainID);
+							sjtu::vector<pend> waitlist = waiting.Find(tar.trainID);
 							for(int i = 0; i < waitlist.size(); ++i){
 								if(waitlist[i].time == tar.time){
 									waiting.Delete(tar.trainID, waitlist[i]);
@@ -984,7 +983,7 @@ int main(){
 				std::string p = "time";
 				if(!pp.empty())p = pp;
 				my_date dateNeed(dd);
-				std::vector<trainid>alltrian = stations.Find(from);
+				sjtu::vector<trainid>alltrian = stations.Find(from);
 				bool is_ans = false;
 				int ans_time=0,ans_cost=0;
 				trainInforSortbyTime ans1{};
@@ -999,7 +998,7 @@ int main(){
 					int num1 = s->seat[stationInformation.num];
 					for(int j = stationInformation.num + 1; j < tr1->stationNum; ++j){
 						if(s->seat[j-1]<num1)num1 = s->seat[j-1];
-						std::vector<trainid>alltrain2 = stations.Find(tr1->stations[j]);
+						sjtu::vector<trainid>alltrain2 = stations.Find(tr1->stations[j]);
 						for(int k = 0; k < alltrain2.size(); ++k){
 							trainid stationInformation2 = alltrain2[k];
 							train * tr2 = trainbank.Find(stationInformation2.trainID);
