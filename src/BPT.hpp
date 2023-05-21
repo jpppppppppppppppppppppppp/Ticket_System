@@ -118,7 +118,7 @@ public:
 		hash_node(int ii, list_node * ll, hash_node* hh):index(ii), address(ll), next(hh){}
 		hash_node(){}
 	};
-	static const int hash_size = 1024 * 1024 / sizeof(hash_node);
+	static const int hash_size = 512 * 1024 / sizeof(hash_node);
 	hash_node hash_map[hash_size];
 	int hash_map_size = 0;
 	std::fstream io;
