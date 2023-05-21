@@ -368,7 +368,7 @@ struct trainInforSortbyPrice{
 };
 
 int main(){
-//	freopen("../testcases/pressure_2_easy/5.in","r",stdin);
+//	freopen("../testcases/basic_2/1.in","r",stdin);
 //	freopen("test.txt","w",stdout);
 	std::ios::sync_with_stdio(false);
 	cin.tie(0),cout.tie(0);
@@ -731,38 +731,38 @@ int main(){
 				if(pp.empty()) pp = "time";
 				if(pp == "time"){
 					sjtu::map<trainInforSortbyTime,int>alltrain;
-					sjtu::vector<trainid *>trainlist1 = stations.Find(from);
-					sjtu::vector<trainid *>trainlist2 = stations.Find(to);
+					sjtu::vector<trainid >trainlist1 = stations.Find(from);
+					sjtu::vector<trainid >trainlist2 = stations.Find(to);
 					int ptr1 = 0, ptr2 = 0;
 					while (ptr1 < trainlist1.size() and ptr2 < trainlist2.size()){
-						if(trainlist1[ptr1]->trainID < trainlist2[ptr2]->trainID){
+						if(trainlist1[ptr1].trainID < trainlist2[ptr2].trainID){
 							++ptr1;
 							continue;
 						}
-						else if(trainlist2[ptr2]->trainID < trainlist1[ptr1]->trainID){
+						else if(trainlist2[ptr2].trainID < trainlist1[ptr1].trainID){
 							++ptr2;
 							continue;
 						}
 						else{//find it
-							if(trainlist1[ptr1]->num >= trainlist2[ptr2]->num){
+							if(trainlist1[ptr1].num >= trainlist2[ptr2].num){
 								++ptr1,++ptr2;
 								continue;
 							}
-							trainid * id1 = trainlist1[ptr1];
-							trainid * id2 = trainlist2[ptr2];
-							train * tr = trainbank.Find(id1->trainID);
+							trainid id1 = trainlist1[ptr1];
+							trainid id2 = trainlist2[ptr2];
+							train * tr = trainbank.Find(id1.trainID);
 							bool time_val = false;
-							my_date useless = dateNeed.minus_time(tr->leaveTime[id1->num]);
+							my_date useless = dateNeed.minus_time(tr->leaveTime[id1.num]);
 							if(tr->beginSale <= useless and useless <= tr->endSale)time_val = true;
 							if(time_val){
-								dateAndtrainID dat(useless, id1->trainID);
+								dateAndtrainID dat(useless, id1.trainID);
 								seats * s = allseats.Find(dat);
 								int min_seat = tr->seatNum;
-								for(int i = id1->num; i < id2->num; ++i){
+								for(int i = id1.num; i < id2.num; ++i){
 									if(s->seat[i] < min_seat)min_seat = s->seat[i];
 								}
-								int price = tr->prices[id2->num] - tr->prices[id1->num];
-								alltrain[trainInforSortbyTime(id1->trainID,from,to,useless,tr->leaveTime[id1->num],tr->arriveTime[id2->num],price,min_seat)]=1;
+								int price = tr->prices[id2.num] - tr->prices[id1.num];
+								alltrain[trainInforSortbyTime(id1.trainID,from,to,useless,tr->leaveTime[id1.num],tr->arriveTime[id2.num],price,min_seat)]=1;
 							}
 							ptr1 ++,ptr2++;
 						}
@@ -774,39 +774,39 @@ int main(){
 				}else if(pp == "cost"){
 
 					sjtu::map<trainInforSortbyPrice, int> alltrain;
-					sjtu::vector<trainid*> trainlist1 = stations.Find(from);
-					sjtu::vector<trainid*> trainlist2 = stations.Find(to);
+					sjtu::vector<trainid> trainlist1 = stations.Find(from);
+					sjtu::vector<trainid> trainlist2 = stations.Find(to);
 					int ptr1 = 0, ptr2 = 0;
 					while (ptr1 < trainlist1.size() and ptr2 < trainlist2.size()){
-						if(trainlist1[ptr1]->trainID < trainlist2[ptr2]->trainID){
+						if(trainlist1[ptr1].trainID < trainlist2[ptr2].trainID){
 							++ptr1;
 							continue;
 						}
-						else if(trainlist2[ptr2]->trainID < trainlist1[ptr1]->trainID){
+						else if(trainlist2[ptr2].trainID < trainlist1[ptr1].trainID){
 							++ptr2;
 							continue;
 						}
 						else{//find it
-							if(trainlist1[ptr1]->num >= trainlist2[ptr2]->num){
+							if(trainlist1[ptr1].num >= trainlist2[ptr2].num){
 								++ptr1, ++ptr2;
 								continue;
 							}
-							trainid* id1 = trainlist1[ptr1];
-							trainid* id2 = trainlist2[ptr2];
-							train* tr = trainbank.Find(id1->trainID);
+							trainid id1 = trainlist1[ptr1];
+							trainid id2 = trainlist2[ptr2];
+							train* tr = trainbank.Find(id1.trainID);
 							bool time_val = false;
-							my_date useless = dateNeed.minus_time(tr->leaveTime[id1->num]);
+							my_date useless = dateNeed.minus_time(tr->leaveTime[id1.num]);
 							if(tr->beginSale <= useless and useless <= tr->endSale)time_val = true;
 							if(time_val){
-								dateAndtrainID dat(useless, id1->trainID);
+								dateAndtrainID dat(useless, id1.trainID);
 								seats* s = allseats.Find(dat);
 								int min_seat = tr->seatNum;
-								for(int i = id1->num; i < id2->num; ++i){
+								for(int i = id1.num; i < id2.num; ++i){
 									if(s->seat[i] < min_seat)min_seat = s->seat[i];
 								}
-								int price = tr->prices[id2->num] - tr->prices[id1->num];
-								alltrain[trainInforSortbyPrice(id1->trainID, from, to, useless, tr->leaveTime[id1->num],
-								                              tr->arriveTime[id2->num], price, min_seat)] = 1;
+								int price = tr->prices[id2.num] - tr->prices[id1.num];
+								alltrain[trainInforSortbyPrice(id1.trainID, from, to, useless, tr->leaveTime[id1.num],
+								                               tr->arriveTime[id2.num], price, min_seat)] = 1;
 							}
 							ptr1 ++,ptr2++;
 						}
@@ -824,10 +824,10 @@ int main(){
 				cin >> opt2 >> user;
 				my_string<25>username(user);
 				if(loginuser.find(username)!=loginuser.end()){
-					sjtu::vector<order *>allorders = orders.Find(username);
+					sjtu::vector<order>allorders = orders.Find(username);
 					cout << timestamp << ' ' << allorders.size() << '\n';
 					for(int i=0;i<allorders.size();i++){
-						cout << *(allorders[i]) << '\n';
+						cout << allorders[i] << '\n';
 					}
 				}else cout << timestamp <<" -1\n";
 			}
@@ -855,30 +855,28 @@ int main(){
 				if(!nn.empty())n = str_to_int(nn);
 				my_string<25>username(uu);
 				if(loginuser.find(username)!=loginuser.end()){
-					sjtu::vector<order*> allorders = orders.Find(username);
+					sjtu::vector<order> allorders = orders.Find(username);
 					if(n <= allorders.size()){
-						order* tar = allorders[n - 1];
+						order tar = allorders[n - 1];
 						int ind1 = 0, ind2 = 0;
-						train* tr = trainbank.Find(tar->trainID);
+						train* tr = trainbank.Find(tar.trainID);
 						for(int i = 0; i < tr->stationNum; ++i){
-							if(tr->stations[i] == tar->from)ind1 = i;
-							if(tr->stations[i] == tar->to)ind2 = i;
+							if(tr->stations[i] == tar.from)ind1 = i;
+							if(tr->stations[i] == tar.to)ind2 = i;
 						}
-//						if(tar->trainID == "LeavesofGrass" and tar->whichday.mm == 6 and tar->whichday.dd == 28){
-//							cout << "cxk refund " << tar->statue << ' ' << ind1 << ' ' << ind2 << ' ' << tar->num << '\n';
-//						}
-						if(tar->statue == "success"){
-							tar->statue = "refunded";
-							dateAndtrainID dat(tar->whichday, tar->trainID);
+						if(tar.statue == "success"){
+							orders.Delete(username, tar);
+							tar.statue = "refunded";
+							orders.Insert(username, tar);
+							dateAndtrainID dat(tar.whichday, tar.trainID);
 							seats* s = allseats.Find(dat);
-							bool flag = ((tar->trainID == "IHEARDthatyouask") && ((tar->whichday.mm == 7) && (tar->whichday.dd == 22)));
 							for(int i = ind1; i < ind2; ++i){
-								s->seat[i] += tar->num;
+								s->seat[i] += tar.num;
 							}
-							sjtu::vector<pend> waitlist = waiting.Findagain(tar->trainID);
+							sjtu::vector<pend> waitlist = waiting.Find(tar.trainID);
 							for(int i = 0; i < waitlist.size(); ++i){
 								pend todo = waitlist[i];
-								if(todo.whichday == tar->whichday){
+								if(todo.whichday == tar.whichday){
 									for(int j = 0; j < tr->stationNum; ++j){
 										if(tr->stations[j] == todo.from)ind1 = j;
 										if(tr->stations[j] == todo.to)ind2 = j;
@@ -889,32 +887,36 @@ int main(){
 									}
 									if(min_seat >= todo.num){
 										my_string<25> waituser = todo.username;
-										sjtu::vector<order*> new_orderlist = orders.Find(waituser);
+										sjtu::vector<order> new_orderlist = orders.Find(waituser);
 										for(int j = 0; j < new_orderlist.size(); ++j){
-											if(new_orderlist[j]->time == todo.time){
-												new_orderlist[j]->statue = "success";
+											if(new_orderlist[j].time == todo.time){
+												orders.Delete(waituser, new_orderlist[j]);
+												new_orderlist[j].statue = "success";
+												orders.Insert(waituser, new_orderlist[j]);
 											}
 										}
 										for(int j = ind1; j < ind2; ++j){
 											s->seat[j] -= todo.num;
 										}
-										waiting.Delete(tar->trainID, todo);
+										waiting.Delete(tar.trainID, todo);
 									}
 								}
 							}
 							cout << timestamp << " 0\n";
 						}
-						else if(tar->statue == "pending"){
-							tar->statue = "refunded";
-							sjtu::vector<pend*> waitlist = waiting.Find(tar->trainID);
+						else if(tar.statue == "pending"){
+							orders.Delete(username, tar);
+							tar.statue = "refunded";
+							orders.Insert(username, tar);
+							sjtu::vector<pend> waitlist = waiting.Find(tar.trainID);
 							for(int i = 0; i < waitlist.size(); ++i){
-								if(waitlist[i]->time == tar->time){
-									waiting.Delete(tar->trainID, *(waitlist[i]));
+								if(waitlist[i].time == tar.time){
+									waiting.Delete(tar.trainID, waitlist[i]);
 								}
 							}
 							cout << timestamp << " 0\n";
 						}
-						else if(tar->statue == "refunded"){
+						else if(tar.statue == "refunded"){
 							cout << timestamp << " -1\n";
 						}
 					}
@@ -981,75 +983,75 @@ int main(){
 				std::string p = "time";
 				if(!pp.empty())p = pp;
 				my_date dateNeed(dd);
-				sjtu::vector<trainid *>alltrian = stations.Find(from);
+				sjtu::vector<trainid>alltrian = stations.Find(from);
 				bool is_ans = false;
 				int ans_time=0,ans_cost=0;
 				trainInforSortbyTime ans1{};
 				trainInforSortbyTime ans2{};
 				for(int i = 0; i < alltrian.size(); ++i){
-					trainid * stationInformation = alltrian[i];
-					train * tr1 = trainbank.Find(stationInformation->trainID);
-					my_date date1 = dateNeed.minus_time(tr1->leaveTime[stationInformation->num]);
+					trainid stationInformation = alltrian[i];
+					train * tr1 = trainbank.Find(stationInformation.trainID);
+					my_date date1 = dateNeed.minus_time(tr1->leaveTime[stationInformation.num]);
 					if(!(tr1->beginSale <= date1 and date1 <= tr1->endSale))continue;
-					dateAndtrainID dat1(date1, stationInformation->trainID);
+					dateAndtrainID dat1(date1, stationInformation.trainID);
 					seats* s = allseats.Find(dat1);
-					int num1 = s->seat[stationInformation->num];
-					for(int j = stationInformation->num + 1; j < tr1->stationNum; ++j){
+					int num1 = s->seat[stationInformation.num];
+					for(int j = stationInformation.num + 1; j < tr1->stationNum; ++j){
 						if(s->seat[j-1]<num1)num1 = s->seat[j-1];
-						sjtu::vector<trainid *>alltrain2 = stations.Find(tr1->stations[j]);
+						sjtu::vector<trainid>alltrain2 = stations.Find(tr1->stations[j]);
 						for(int k = 0; k < alltrain2.size(); ++k){
-							trainid * stationInformation2 = alltrain2[k];
-							train * tr2 = trainbank.Find(stationInformation2->trainID);
+							trainid stationInformation2 = alltrain2[k];
+							train * tr2 = trainbank.Find(stationInformation2.trainID);
 							bool tr_val = false;
 							int l;
-							for(l = stationInformation2->num + 1; l < tr2->stationNum; ++l){
+							for(l = stationInformation2.num + 1; l < tr2->stationNum; ++l){
 								if(tr2->stations[l] == to){
 									tr_val = true;
 									break;
 								}
 							}
 							if(tr_val){
-								if(!(stationInformation->trainID == stationInformation2->trainID)){
+								if(!(stationInformation.trainID == stationInformation2.trainID)){
 									my_date date2 = date1.add_time(tr1->arriveTime[j]).minus_time(
-										tr2->leaveTime[stationInformation2->num]);
-									if(compare(tr1->arriveTime[j], tr2->leaveTime[stationInformation2->num]))
+										tr2->leaveTime[stationInformation2.num]);
+									if(compare(tr1->arriveTime[j], tr2->leaveTime[stationInformation2.num]))
 										date2.add(1);
 									if(date2 <= tr2->endSale){
 										if(date2 < tr2->beginSale)date2 = tr2->beginSale;
-										dateAndtrainID dat2(date2, stationInformation2->trainID);
+										dateAndtrainID dat2(date2, stationInformation2.trainID);
 										seats* s2 = allseats.Find(dat2);
 										int num2 = tr2->seatNum;
-										for(int m = stationInformation2->num; m < l; ++m){
+										for(int m = stationInformation2.num; m < l; ++m){
 											if(s2->seat[m] < num2)num2 = s2->seat[m];
 										}
 										int key_time = 0, key_cost = 0;
 										key_time = between(date1, date2) * 24 * 60 +
-										           mid(tr1->leaveTime[stationInformation->num], tr2->arriveTime[l]);
+										           mid(tr1->leaveTime[stationInformation.num], tr2->arriveTime[l]);
 										key_cost =
-											tr1->prices[j] - tr1->prices[stationInformation->num] + tr2->prices[l] -
-											tr2->prices[stationInformation2->num];
+											tr1->prices[j] - tr1->prices[stationInformation.num] + tr2->prices[l] -
+											tr2->prices[stationInformation2.num];
 										if(is_ans){
 											if(p == "time"){
 												bool flag = false;
 												if(key_time != ans_time)flag = key_time < ans_time;
 												else if(key_cost != ans_cost)flag = key_cost < ans_cost;
-												else if(!(stationInformation->trainID == ans1.trainID))
-													flag = stationInformation->trainID < ans1.trainID;
-												else flag = stationInformation2->trainID < ans2.trainID;
+												else if(!(stationInformation.trainID == ans1.trainID))
+													flag = stationInformation.trainID < ans1.trainID;
+												else flag = stationInformation2.trainID < ans2.trainID;
 												if(flag){
 													ans_cost = key_cost;
 													ans_time = key_time;
-													ans1 = trainInforSortbyTime(stationInformation->trainID, from,
+													ans1 = trainInforSortbyTime(stationInformation.trainID, from,
 													                            tr1->stations[j], date1,
-													                            tr1->leaveTime[stationInformation->num],
+													                            tr1->leaveTime[stationInformation.num],
 													                            tr1->arriveTime[j], tr1->prices[j] -
-													                                                tr1->prices[stationInformation->num],
+													                                                tr1->prices[stationInformation.num],
 													                            num1);
-													ans2 = trainInforSortbyTime(stationInformation2->trainID,
+													ans2 = trainInforSortbyTime(stationInformation2.trainID,
 													                            tr1->stations[j], to, date2,
-													                            tr2->leaveTime[stationInformation2->num],
+													                            tr2->leaveTime[stationInformation2.num],
 													                            tr2->arriveTime[l], tr2->prices[l] -
-													                                                tr2->prices[stationInformation2->num],
+													                                                tr2->prices[stationInformation2.num],
 													                            num2);
 												}
 											}
@@ -1057,23 +1059,23 @@ int main(){
 												bool flag = false;
 												if(key_cost != ans_cost)flag = key_cost < ans_cost;
 												else if(key_time != ans_time)flag = key_time < ans_time;
-												else if(!(stationInformation->trainID == ans1.trainID))
-													flag = stationInformation->trainID < ans1.trainID;
-												else flag = stationInformation2->trainID < ans2.trainID;
+												else if(!(stationInformation.trainID == ans1.trainID))
+													flag = stationInformation.trainID < ans1.trainID;
+												else flag = stationInformation2.trainID < ans2.trainID;
 												if(flag){
 													ans_cost = key_cost;
 													ans_time = key_time;
-													ans1 = trainInforSortbyTime(stationInformation->trainID, from,
+													ans1 = trainInforSortbyTime(stationInformation.trainID, from,
 													                            tr1->stations[j], date1,
-													                            tr1->leaveTime[stationInformation->num],
+													                            tr1->leaveTime[stationInformation.num],
 													                            tr1->arriveTime[j], tr1->prices[j] -
-													                                                tr1->prices[stationInformation->num],
+													                                                tr1->prices[stationInformation.num],
 													                            num1);
-													ans2 = trainInforSortbyTime(stationInformation2->trainID,
+													ans2 = trainInforSortbyTime(stationInformation2.trainID,
 													                            tr1->stations[j], to, date2,
-													                            tr2->leaveTime[stationInformation2->num],
+													                            tr2->leaveTime[stationInformation2.num],
 													                            tr2->arriveTime[l], tr2->prices[l] -
-													                                                tr2->prices[stationInformation2->num],
+													                                                tr2->prices[stationInformation2.num],
 													                            num2);
 												}
 											}
@@ -1082,17 +1084,17 @@ int main(){
 											is_ans = true;
 											ans_time = key_time;
 											ans_cost = key_cost;
-											ans1 = trainInforSortbyTime(stationInformation->trainID, from,
+											ans1 = trainInforSortbyTime(stationInformation.trainID, from,
 											                            tr1->stations[j], date1,
-											                            tr1->leaveTime[stationInformation->num],
+											                            tr1->leaveTime[stationInformation.num],
 											                            tr1->arriveTime[j], tr1->prices[j] -
-											                                                tr1->prices[stationInformation->num],
+											                                                tr1->prices[stationInformation.num],
 											                            num1);
-											ans2 = trainInforSortbyTime(stationInformation2->trainID, tr1->stations[j],
+											ans2 = trainInforSortbyTime(stationInformation2.trainID, tr1->stations[j],
 											                            to, date2,
-											                            tr2->leaveTime[stationInformation2->num],
+											                            tr2->leaveTime[stationInformation2.num],
 											                            tr2->arriveTime[l], tr2->prices[l] -
-											                                                tr2->prices[stationInformation2->num],
+											                                                tr2->prices[stationInformation2.num],
 											                            num2);
 										}
 									}
