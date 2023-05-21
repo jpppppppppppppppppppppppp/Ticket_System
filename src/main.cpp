@@ -2,6 +2,7 @@
 #include "map.hpp"
 #include <iostream>
 #include <cstring>
+#include <vector>
 using std::cout;
 using std::cin;
 
@@ -13,8 +14,8 @@ inline int str_to_int(std::string & str){
 	}
 	return ans;
 }
-sjtu::vector<std::string> parser(const std::string & str){
-	sjtu::vector<std::string>ans;
+std::vector<std::string> parser(const std::string & str){
+	std::vector<std::string>ans;
 	std::string buffer;
 	for(auto ch:str){
 		if(ch == '|'){
@@ -555,11 +556,11 @@ int main(){
 					new_train.leaveTime[0] = my_time(information["-x"]);
 					new_train.arriveTime[0] = my_time(-1,-1);
 					new_train.type = information["-y"][0];
-					sjtu::vector<std::string> ss = parser(information["-s"] + '|');
-					sjtu::vector<std::string> pp = parser(information["-p"] + '|');
-					sjtu::vector<std::string> tt = parser(information["-t"] + '|');
-					sjtu::vector<std::string> oo = parser(information["-o"] + '|');
-					sjtu::vector<std::string> dd = parser(information["-d"] + '|');
+					std::vector<std::string> ss = parser(information["-s"] + '|');
+					std::vector<std::string> pp = parser(information["-p"] + '|');
+					std::vector<std::string> tt = parser(information["-t"] + '|');
+					std::vector<std::string> oo = parser(information["-o"] + '|');
+					std::vector<std::string> dd = parser(information["-d"] + '|');
 					new_train.beginSale = my_date(dd[0]);
 					new_train.endSale = my_date(dd[1]);
 					new_train.stations[0] = ss[0];
