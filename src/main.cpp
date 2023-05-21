@@ -367,7 +367,8 @@ struct trainInforSortbyPrice{
 		return io;
 	}
 };
-
+std::string cc,uu,pp,nn,mm,ii,dd,ff,tt,qq,ss;
+std::string line;
 int main(){
 //	freopen("../testcases/basic_2/1.in","r",stdin);
 //	freopen("test.txt","w",stdout);
@@ -380,7 +381,6 @@ int main(){
 			cin >> timestamp;
 			cin >> opt;
 			if(opt == "add_user"){
-				std::string cc,uu,pp,nn,mm;
 				bool flag = true;
 				int gg=0,cgg=0;
 				for(int i = 0; i < 6; ++i){
@@ -423,7 +423,6 @@ int main(){
 				}else cout << timestamp << " -1\n";
 			}
 			else if(opt == "login"){
-				std::string uu,pp;
 				bool flag = true;
 				for(int i = 0; i < 2; ++i){
 					cin >> opt2;
@@ -443,7 +442,6 @@ int main(){
 				}else cout << timestamp << " -1\n";
 			}
 			else if(opt == "logout"){
-				std::string uu;
 				cin >> opt2 >> uu;
 				my_string<25>user_name(uu);
 				auto iter = loginuser.find(user_name);
@@ -453,7 +451,6 @@ int main(){
 				}else cout << timestamp << " -1\n";
 			}
 			else if(opt == "query_profile"){
-				std::string cc,uu;
 				for(int i = 0; i < 2; ++i){
 					cin >> opt2;
 					if(opt2 == "-c"){
@@ -478,10 +475,9 @@ int main(){
 				}else cout << timestamp << " -1\n";
 			}
 			else if(opt == "modify_profile"){
-				std::string line;
 				getline(std::cin,line);
 				line.append(" ");
-				std::string cc,uu,pp,nn,mm;int gg=0;
+				int gg=0;
 				bool g = false;
 				opt2.clear();
 				for(int i = 1; i < line.length(); ++i){
@@ -556,24 +552,24 @@ int main(){
 					new_train.leaveTime[0] = my_time(information["-x"]);
 					new_train.arriveTime[0] = my_time(-1,-1);
 					new_train.type = information["-y"][0];
-					std::vector<std::string> ss = parser(information["-s"] + '|');
-					std::vector<std::string> pp = parser(information["-p"] + '|');
-					std::vector<std::string> tt = parser(information["-t"] + '|');
-					std::vector<std::string> oo = parser(information["-o"] + '|');
-					std::vector<std::string> dd = parser(information["-d"] + '|');
-					new_train.beginSale = my_date(dd[0]);
-					new_train.endSale = my_date(dd[1]);
-					new_train.stations[0] = ss[0];
+					std::vector<std::string> sss = parser(information["-s"] + '|');
+					std::vector<std::string> ppp = parser(information["-p"] + '|');
+					std::vector<std::string> ttt = parser(information["-t"] + '|');
+					std::vector<std::string> ooo = parser(information["-o"] + '|');
+					std::vector<std::string> ddd = parser(information["-d"] + '|');
+					new_train.beginSale = my_date(ddd[0]);
+					new_train.endSale = my_date(ddd[1]);
+					new_train.stations[0] = sss[0];
 					int i=1;
 					for(; i < new_train.stationNum-1; ++i){
-						new_train.stations[i] = ss[i];
-						new_train.arriveTime[i] = new_train.leaveTime[i-1].add_mi(str_to_int(tt[i-1]));
-						new_train.leaveTime[i] = new_train.arriveTime[i].add_mi(str_to_int(oo[i-1]));
-						new_train.prices[i] = new_train.prices[i-1] + str_to_int(pp[i-1]);
+						new_train.stations[i] = sss[i];
+						new_train.arriveTime[i] = new_train.leaveTime[i-1].add_mi(str_to_int(ttt[i-1]));
+						new_train.leaveTime[i] = new_train.arriveTime[i].add_mi(str_to_int(ooo[i-1]));
+						new_train.prices[i] = new_train.prices[i-1] + str_to_int(ppp[i-1]);
 					}
-					new_train.prices[i] = new_train.prices[i-1] + str_to_int(pp[i-1]);
-					new_train.stations[i] = ss[i];
-					new_train.arriveTime[i] = new_train.leaveTime[i-1].add_mi(str_to_int(tt[i-1]));
+					new_train.prices[i] = new_train.prices[i-1] + str_to_int(ppp[i-1]);
+					new_train.stations[i] = sss[i];
+					new_train.arriveTime[i] = new_train.leaveTime[i-1].add_mi(str_to_int(ttt[i-1]));
 					new_train.leaveTime[i] = my_time(-1,-1);
 					trainbank.Insert(trainID,new_train);
 					cout << timestamp << " 0\n";
@@ -601,10 +597,8 @@ int main(){
 				}else cout << timestamp << " -1\n";
 			}
 			else if(opt == "buy_ticket"){
-				std::string line;
 				getline(std::cin, line);
 				line.append(" ");
-				std::string uu,ii,dd,nn,ff,tt,qq;
 				opt2.clear();
 				for(int i = 0; i < line.length(); ++i){
 					if(line[i] == ' '){
@@ -700,10 +694,8 @@ int main(){
 				if(!flag)cout << timestamp << " -1\n";
 			}
 			else if(opt == "query_ticket"){
-				std::string line;
 				getline(std::cin, line);
 				line.append(" ");
-				std::string ss,tt,dd,pp;
 				opt2.clear();
 				for(int i = 0; i < line.length(); ++i){
 					if(line[i] == ' '){
@@ -833,10 +825,8 @@ int main(){
 				}else cout << timestamp <<" -1\n";
 			}
 			else if(opt == "refund_ticket"){
-				std::string line;
 				getline(std::cin, line);
 				line.append(" ");
-				std::string uu,nn;
 				opt2.clear();
 				for(int i = 0; i < line.length(); ++i){
 					if(line[i] == ' '){
@@ -925,7 +915,6 @@ int main(){
 				}else cout << timestamp << " -1\n";
 			}
 			else if(opt == "query_train"){
-				std::string ii,dd;
 				for(int i = 0; i < 2; ++i){
 					cin >> opt2;
 					if (opt2 == "-i"){
@@ -953,10 +942,8 @@ int main(){
 				}else cout << timestamp << " -1\n";
 			}
 			else if(opt == "query_transfer"){
-				std::string line;
 				getline(std::cin, line);
 				line.append(" ");
-				std::string ss,tt,dd,pp;
 				opt2.clear();
 				for(int i = 0; i < line.length(); ++i){
 					if(line[i] == ' '){
@@ -1110,7 +1097,6 @@ int main(){
 				}else cout << timestamp << " 0\n";
 			}
 			else if(opt == "delete_train"){
-				std::string ii;
 				cin >> opt2 >> ii;
 				my_string<25>trainID(ii);
 				train * tr = trainbank.Find(trainID);
