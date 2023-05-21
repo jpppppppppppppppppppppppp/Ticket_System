@@ -956,7 +956,7 @@ public:
 			return lhs < rhs.key;
 		}
 	};
-	static constexpr int N = 100;
+	static constexpr int N = 50;
 	static constexpr int M = N / 2;
 	struct block {
 		int size = 0;
@@ -1255,7 +1255,7 @@ public:
 			return lhs < rhs.key;
 		}
 	};
-	static constexpr int N = 100;
+	static constexpr int N = 50;
 	static constexpr int M = N / 2;
 	struct block {
 		int size = 0;
