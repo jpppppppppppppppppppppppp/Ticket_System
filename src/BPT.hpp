@@ -623,7 +623,7 @@ public:
 	};
 	list_node * head;
 	list_node * tail;
-	static const int hash_size = 1024 * 1024 * 1.5 / sizeof(data);
+	static const int hash_size = 1024 * 1024 * 2 / sizeof(data);
 	int block_num = 0;
 	int root = 0;
 	struct hash_node{

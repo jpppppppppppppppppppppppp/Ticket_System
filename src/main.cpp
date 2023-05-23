@@ -569,7 +569,7 @@ int main(){
 					auto ans = userbank.FindExac(user_name);
 					if(!ans.second)flag = false;
 					if(flag){
-						int cur_g = userbank.FindExac(cur_name).first.privilege;
+						int cur_g = loginuser[cur_name];
 						if(ans.first.privilege < cur_g or cc == uu){
 							user u = ans.first;
 							cout << timestamp << ' ' << uu << ' ' << u.name << ' ' << u.mailAddr << ' ' << u.privilege
