@@ -622,7 +622,7 @@ public:
 	};
 	list_node * head;
 	list_node * tail;
-	static const int hash_size = 1024 * 1024 / sizeof(data);
+	static const int hash_size = 1024 * 1024 * 1.5 / sizeof(data);
 	int block_num = 0;
 	int root = 0;
 	struct hash_node{
@@ -978,7 +978,7 @@ template<typename data>
 class io_link{
 public:
 	struct buffer{
-		int buff[50000];
+		int buff[20000];
 		buffer(){ memset(buff, 0, sizeof(buff)); }
 	};
 	std::fstream io;

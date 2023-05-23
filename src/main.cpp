@@ -468,7 +468,7 @@ struct trainInforSortbyPrice{
 };
 
 int main(){
-//	freopen("../testcases/basic_6/10.in","r",stdin);
+//	freopen("../testcases/pressure_2_easy/2.in","r",stdin);
 //	freopen("test.txt","w",stdout);
 	std::ios::sync_with_stdio(false);
 	cin.tie(0),cout.tie(0);
@@ -1016,7 +1016,7 @@ int main(){
 						}
 						else if(tar.statue == "pending"){
 							orderinfor od(username, tar.time);
-							pendinfor od2(username, tar.time);
+							pendinfor od2(tar.trainID, tar.time);
 							tar.statue = "refunded";
 							orders.overwrite(od, tar);
 							sjtu::vector<pend> waitlist = waiting.Find(tar.trainID);
