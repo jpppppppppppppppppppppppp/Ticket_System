@@ -468,7 +468,7 @@ struct trainInforSortbyPrice{
 };
 
 int main(){
-//	freopen("../testcases/pressure_2_easy/2.in","r",stdin);
+//	freopen("../testcases/pressure_3_easy/1.in","r",stdin);
 //	freopen("test.txt","w",stdout);
 	std::ios::sync_with_stdio(false);
 	cin.tie(0),cout.tie(0);
@@ -535,9 +535,9 @@ int main(){
 					else flag = false;
 				}
 				my_string<25>user_name(uu);
-				auto ans = userbank.Find(user_name);
-				if(!(ans.empty()) and ans[0].password == pp and loginuser.find(user_name)==loginuser.end() and flag){
-					loginuser[user_name] = ans[0].privilege;
+				auto ans = userbank.FindExac(user_name);
+				if(ans.second and ans.first.password == pp and loginuser.find(user_name)==loginuser.end() and flag){
+					loginuser[user_name] = ans.first.privilege;
 					cout << timestamp << " 0\n";
 				}else cout << timestamp << " -1\n";
 			}

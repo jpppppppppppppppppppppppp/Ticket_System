@@ -6,6 +6,7 @@
 #include <cstring>
 #include <ctime>
 #include "exceptions.hpp"
+#include "utility.hpp"
 
 using std::cout;
 using std::cin;
@@ -1225,8 +1226,8 @@ public:
 		}
 		return ans;
 	}
-	std::pair<v, bool> FindExac(k& key){
-		std::pair<v, bool> ans;
+	sjtu::pair<v, bool> FindExac(k& key){
+		sjtu::pair<v, bool> ans;
 		ans.second = false;
 		if(root){
 			block* tar = my_file.read(root);
