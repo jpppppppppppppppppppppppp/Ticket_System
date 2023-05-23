@@ -5,10 +5,11 @@ set(CMAKE_CXX_STANDARD 14)
 
 add_executable(code
         src/main.cpp
-        src/BPT.hpp
+        src/bpt.hpp
         src/map.hpp
         src/utility.hpp
-        src/exceptions.hpp)
+        src/exceptions.hpp
+       )
 
 
 set(test_prefix "${PROJECT_SOURCE_DIR}/testcases")

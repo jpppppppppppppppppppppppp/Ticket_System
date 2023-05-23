@@ -608,7 +608,7 @@ namespace sjtu {
 	};
 }
 
-template<typename data, typename key>
+template<typename data>
 class io_sys {
 public:
 	struct list_node {
@@ -622,7 +622,7 @@ public:
 	};
 	list_node * head;
 	list_node * tail;
-
+	static const int hash_size = 1024 * 1024 / sizeof(data);
 	int block_num = 0;
 	int root = 0;
 	struct hash_node{
@@ -631,9 +631,7 @@ public:
 		hash_node * next= nullptr;
 		hash_node(int ii, list_node * ll, hash_node* hh):index(ii), address(ll), next(hh){}
 		hash_node(){}
-	};
-	static const int hash_size = 512 * 1024 / sizeof(hash_node);
-	hash_node hash_map[hash_size];
+	}hash_map[hash_size];
 	int hash_map_size = 0;
 	std::fstream io;
 	std::fstream other;
@@ -924,56 +922,162 @@ public:
 				delete del;
 				break;
 			}
+			ptr = ptr->next;
 		}
 		if(index == block_num)block_num--;
 	}
 };
 
-template <typename k, typename v>
+struct Node{
+	int data=0;
+	Node * next = nullptr;
+};
+
+class Queue{
+public:
+	Node * front= nullptr;
+	Node * rear = nullptr;
+	Queue(){}
+	~Queue(){
+		while(front != nullptr){
+			Node * temp = front->next;
+			delete front;
+			front = temp;
+		}
+	}
+
+	inline bool empty(){
+		return front == nullptr;
+	};
+	void enqueue(int ind){
+		Node * newNode = new Node;
+		newNode->data = ind;
+		if(empty()){
+			front = rear = newNode;
+		}else{
+			rear->next = newNode;
+			rear = newNode;
+		}
+	}
+
+	void dequeue(){
+		if(empty())return;
+		Node * temp = front;
+		front = front->next;
+		if(front == nullptr)rear = nullptr;
+		delete temp;
+	}
+
+	int getfront(){
+		if(empty())return -1;
+		return front->data;
+	}
+};
+
+template<typename data>
+class io_link{
+public:
+	struct buffer{
+		int buff[50000];
+		buffer(){ memset(buff, 0, sizeof(buff)); }
+	};
+	std::fstream io;
+	std::fstream other;
+	std::string filename;
+	int all_num = 0;
+	int data_size;
+	Queue buffer_queue;
+	io_link();
+	io_link(std::string file):filename(file){
+		io.open(filename);
+		data_size = sizeof(data);
+		if(!io.good()){
+			io.open(filename, std::ios::out);
+			io.close();
+			io.open(filename);
+			other.open(filename + "_help", std::ios::out);
+			other.close();
+			all_num = 0;
+		}else{
+			other.open(filename + "_help");
+			other.seekg(0);
+			other.read(reinterpret_cast<char *>(&all_num), sizeof(int));
+			buffer init;
+			other.read(reinterpret_cast<char *>(&init), sizeof(init));
+			for(int i = 0; i < 20000; ++i){
+				if(init.buff[i] == 0)break;
+				buffer_queue.enqueue(init.buff[i]);
+			}
+			other.close();
+		}
+	}
+	~io_link(){
+		io.close();
+		other.open(filename + "_help");
+		other.seekg(0);
+		other.write(reinterpret_cast<char *>(&all_num), sizeof(int));
+		buffer end;
+		int cnt = 0;
+		while (!buffer_queue.empty()){
+			end.buff[cnt++] = buffer_queue.getfront();
+			buffer_queue.dequeue();
+		}
+		other.write(reinterpret_cast<char *>(&end),sizeof(end));
+		other.close();
+	}
+	data read(int ind){
+		if(ind <= all_num){
+			data to_read;
+			io.seekg((ind-1) * data_size);
+			io.read(reinterpret_cast<char *>(&to_read), data_size);
+			return to_read;
+		}
+	}
+	void del(int ind){
+		buffer_queue.enqueue(ind);
+	}
+	int write(data & to_write){
+		if(buffer_queue.empty()){
+			io.seekp(all_num * data_size);
+			io.write(reinterpret_cast<char *>(&to_write), data_size);
+			++all_num;
+			return all_num;
+		}else{
+			int pos = buffer_queue.getfront();
+			buffer_queue.dequeue();
+			io.seekg((pos-1)*data_size);
+			io.write(reinterpret_cast<char *>(&to_write),data_size);
+			return pos;
+		}
+	}
+	void overwrite(data & to_write, int ind){
+		io.seekg((ind - 1) * data_size);
+		io.write(reinterpret_cast<char*>(&to_write), data_size);
+	}
+};
+
+
+template <typename k1,typename k, typename v>
 class BPT {
 public:
-	struct kv {
-		k key = k();
-		v value = v();
-
-		kv(){}
-
-		kv(const k& K, const v& V) : key(K), value(V){}
-
-		inline friend bool operator ==(const kv& lhs, const kv& rhs){
-			return lhs.key == rhs.key;
-		}
-
-		inline friend bool operator <(const kv& lhs, const kv& rhs){
-			return lhs.key < rhs.key;
-		}
-
-		inline friend bool operator <(const kv& lhs, const k& rhs){
-			return lhs.key < rhs;
-		}
-
-		inline friend bool operator <(const k& lhs, const kv& rhs){
-			return lhs < rhs.key;
-		}
-	};
-	static constexpr int N = 50;
+	static constexpr int N = 1024 * 8 / (sizeof(k) + sizeof(int));
 	static constexpr int M = N / 2;
 	struct block {
 		int size = 0;
 		int father = 0;
-		kv keys[N];
+		k keys[N];
 		int children[N];
 		bool is_leaf = false;
 		int next = 0;
 		int index = 0;
-
-		block(){}
+		block(){ memset(children,0,sizeof(children));}
 	};
 
-	io_sys<block, int> my_file;
+	io_sys<block> my_file;
+	io_link<v> my_list;
 	int root = 0;
 
-	BPT(std::string filename) : my_file(filename){
+	BPT(std::string filename) : my_file(filename),my_list(filename + "_list"){
 		root = my_file.root;
 	}
 
@@ -986,16 +1090,14 @@ public:
 		new_block->is_leaf = child->is_leaf;
 		new_block->size = M;
 		new_block->father = tar->index;
-		child->size = M;
+		child->size = N - M;
 		for(int i = 0; i < M; ++i){
-			new_block->keys[i] = child->keys[i + M];
+			new_block->keys[i] = child->keys[i + N - M];
+			child->keys[i + N - M] = k();
+			new_block->children[i] = child->children[i + N - M];
+			child->children[i + N - M] = 0;
 		}
-		if(!child->is_leaf){
-			for(int i = 0; i < M; ++i){
-				new_block->children[i] = child->children[i + M];
-			}
-		}
-		else{
+		if(child->is_leaf){
 			new_block->next = child->next;
 			child->next = new_block->index;
 		}
@@ -1013,15 +1115,17 @@ public:
 		my_file.write(new_block, new_block->index);
 	}
 
-	bool bool_Insert(block* cur, kv& value){
-		kv* pos = lower_bound(cur->keys, cur->keys + cur->size, value);
-		if(cur->size and *pos == value)return false;
+	bool bool_Insert(block* cur, k& key, v& value){
+		k* pos = lower_bound(cur->keys, cur->keys + cur->size, key);
+		if(cur->size and *pos == key)return false;
 		int ind = pos - cur->keys;
 		if(cur->is_leaf){
 			for(int i = cur->size - 1; i >= ind; --i){
 				cur->keys[i + 1] = cur->keys[i];
+				cur->children[i + 1] = cur->children[i];
 			}
-			cur->keys[ind] = value;
+			cur->keys[ind] = key;
+			cur->children[ind] = my_list.write(value);
 			cur->size++;
 			my_file.write(cur, cur->index);
 			if(cur->size == N)return true;
@@ -1030,11 +1134,11 @@ public:
 		else{
 			if(ind == cur->size){
 				ind--;
-				cur->keys[cur->size - 1] = value;
+				cur->keys[cur->size - 1] = key;
 				my_file.write(cur, cur->index);
 			}
 			block* todo = my_file.read(cur->children[ind]);
-			if(bool_Insert(todo, value)){
+			if(bool_Insert(todo, key, value)){
 				split_child_block(cur, ind, todo);
 			}
 			if(cur->size == N)return true;
@@ -1043,18 +1147,18 @@ public:
 	}
 
 	void Insert(k& key, v value){
-		kv new_kv(key, value);
 		if(!root){
 			block* new_block = my_file.get_new_block();
 			root = new_block->index;
 			new_block->size = 1;
 			new_block->is_leaf = true;
-			new_block->keys[0] = new_kv;
+			new_block->keys[0] = key;
+			new_block->children[0] = my_list.write(value);
 			return;
 		}
 		else{
 			block* root_block = my_file.read(root);
-			if(bool_Insert(root_block, new_kv)){
+			if(bool_Insert(root_block, key, value)){
 				block* new_block = my_file.get_new_block();
 				new_block->is_leaf = false;
 				root_block->father = new_block->index;
@@ -1067,306 +1171,7 @@ public:
 		}
 	}
 
-	virtual v* Find(k& key){
-		v* ans = nullptr;
-		if(root){
-			block* tar = my_file.read(root);
-			while (true){
-				int pos = lower_bound(tar->keys, tar->keys + tar->size, key) - tar->keys;
-				if(pos == tar->size)return ans;
-				if(tar->is_leaf){
-					int end = upper_bound(tar->keys, tar->keys + tar->size, key) - tar->keys;
-					if(pos == end){
-						break;
-					}
-					ans = &(tar->keys[pos].value);
-					return ans;
-				}
-				else{
-					tar = my_file.read(tar->children[pos]);
-				}
-			}
-		}
-		return ans;
-	}
-
-	void borrow_right(block* father, block* left_children, block* right_children, int ind){
-		left_children->children[left_children->size] = right_children->children[0];
-		left_children->keys[left_children->size] = right_children->keys[0];
-		left_children->size++;
-		right_children->size--;
-		if(!right_children->is_leaf){
-			block* changed_key = my_file.read(right_children->children[0]);
-			changed_key->father = left_children->index;
-			my_file.write(changed_key, changed_key->index);
-		}
-		for(int i = 0; i < right_children->size; ++i){
-			right_children->keys[i] = right_children->keys[i + 1];
-			right_children->children[i] = right_children->children[i + 1];
-		}
-		right_children->children[right_children->size] = 0;
-		right_children->keys[right_children->size] = kv();
-		father->keys[ind] = left_children->keys[left_children->size - 1];
-		my_file.write(father, father->index);
-		my_file.write(left_children, left_children->index);
-		my_file.write(right_children, right_children->index);
-	}
-
-	void borrow_left(block* father, block* left_children, block* right_children, int ind){
-		for(int i = right_children->size - 1; i >= 0; i--){
-			right_children->keys[i + 1] = right_children->keys[i];
-			right_children->children[i + 1] = right_children->children[i];
-		}
-		right_children->size++;
-		right_children->children[0] = left_children->children[left_children->size - 1];
-		right_children->keys[0] = left_children->keys[left_children->size - 1];
-		left_children->size--;
-		left_children->children[left_children->size] = 0;
-		left_children->keys[left_children->size] = kv();
-		if(!left_children->is_leaf){
-			block* changed_key = my_file.read(right_children->children[0]);
-			changed_key->father = right_children->index;
-			my_file.write(changed_key, changed_key->index);
-		}
-		father->keys[ind] = left_children->keys[left_children->size - 1];
-		my_file.write(father, father->index);
-		my_file.write(left_children, left_children->index);
-		my_file.write(right_children, right_children->index);
-	}
-
-	void merge_block(block* father, block* left_children, block* right_children, int ind){
-		for(int i = 0; i < right_children->size; ++i){
-			left_children->keys[left_children->size] = right_children->keys[i];
-			left_children->children[left_children->size++] = right_children->children[i];
-			if(!right_children->is_leaf){
-				block* changed_key = my_file.read(right_children->children[i]);
-				changed_key->father = left_children->index;
-				my_file.write(changed_key, changed_key->index);
-			}
-		}
-		if(right_children->is_leaf){
-			left_children->next = right_children->next;
-		}
-		my_file.delete_block(right_children, right_children->index);
-		for(int i = ind; i < father->size - 1; ++i){
-			father->keys[i] = father->keys[i + 1];
-			father->children[i] = father->children[i + 1];
-		}
-		father->keys[ind] = left_children->keys[left_children->size - 1];
-		father->children[ind] = left_children->index;
-		father->size--;
-		father->children[father->size] = 0;
-		father->keys[father->size] = kv();
-		my_file.write(father, father->index);
-		my_file.write(left_children, left_children->index);
-	}
-
-	bool bool_Delete(block* cur, kv& value){
-		kv* pos = lower_bound(cur->keys, cur->keys + cur->size, value);
-		if(cur->is_leaf){
-			if(*pos == value){
-				int ind = pos - cur->keys;
-				for(int i = ind; i < cur->size - 1; ++i){
-					cur->keys[i] = cur->keys[i + 1];
-				}
-				cur->size--;
-				if(cur->size < M - 1)return true;
-				else return false;
-			}
-			else return false;
-		}
-		else{
-			int ind = pos - cur->keys;
-			if(ind == cur->size)return false;
-			block* todo = my_file.read(cur->children[ind]);
-			bool f = bool_Delete(todo, value);
-			cur->keys[ind] = todo->keys[todo->size - 1];
-			if(f){
-				block* left = nullptr, * right = nullptr;
-				if(ind == 0){
-					right = my_file.read(cur->children[ind + 1]);
-				}
-				else if(ind == cur->size - 1){
-					left = my_file.read(cur->children[ind - 1]);
-				}
-				else{
-					left = my_file.read(cur->children[ind - 1]);
-					right = my_file.read(cur->children[ind + 1]);
-				}
-				if(left){
-					if(left->size == M - 1)merge_block(cur, left, todo, ind - 1);
-					else borrow_left(cur, left, todo, ind - 1);
-				}
-				else{
-					if(right->size == M - 1)merge_block(cur, todo, right, ind);
-					else borrow_right(cur, todo, right, ind);
-				}
-				if(cur->size < M - 1)return true;
-				else return false;
-			}
-			else return false;
-		}
-	}
-
-	void Delete(k& key, v& value){
-		if(root){
-			block* root_block = my_file.read(root);
-			kv p(key, value);
-			bool_Delete(root_block, p);
-			if(root_block->size == 1 and !root_block->is_leaf){
-				root = root_block->children[0];
-				my_file.delete_block(root_block, root_block->index);
-				block* new_root = my_file.read(root);
-				new_root->father = 0;
-				my_file.write(new_root, new_root->index);
-			}
-		}
-	}
-
-	inline bool empty(){
-		return root == 0;
-	}
-};
-template <typename k, typename v>
-class Multiple_BPT{
-public:
-	struct kv {
-		k key = k();
-		v value = v();
-
-		kv(){}
-
-		kv(const k& K, const v& V) : key(K), value(V){}
-
-		inline friend bool operator ==(const kv& lhs, const kv& rhs){
-			return lhs.key == rhs.key and lhs.value == rhs.value;
-		}
-
-		inline friend bool operator <(const kv& lhs, const kv& rhs){
-			if(!(lhs.key == rhs.key)) return lhs.key < rhs.key;
-			else return lhs.value < rhs.value;
-		}
-
-		inline friend bool operator <(const kv& lhs, const k& rhs){
-			return lhs.key < rhs;
-		}
-
-		inline friend bool operator <(const k& lhs, const kv& rhs){
-			return lhs < rhs.key;
-		}
-	};
-	static constexpr int N = 50;
-	static constexpr int M = N / 2;
-	struct block {
-		int size = 0;
-		int father = 0;
-		kv keys[N];
-		int children[N];
-		bool is_leaf = false;
-		int next = 0;
-		int index = 0;
-
-		block(){}
-	};
-
-	io_sys<block, int> my_file;
-	int root = 0;
-
-	Multiple_BPT(std::string filename) : my_file(filename){
-		root = my_file.root;
-	}
-
-	~Multiple_BPT(){
-		my_file.root = root;
-	}
-
-	void split_child_block(block* tar, int ind, block* child){
-		block* new_block = my_file.get_new_block();
-		new_block->is_leaf = child->is_leaf;
-		new_block->size = M;
-		new_block->father = tar->index;
-		child->size = M;
-		for(int i = 0; i < M; ++i){
-			new_block->keys[i] = child->keys[i + M];
-		}
-		if(!child->is_leaf){
-			for(int i = 0; i < M; ++i){
-				new_block->children[i] = child->children[i + M];
-			}
-		}
-		else{
-			new_block->next = child->next;
-			child->next = new_block->index;
-		}
-		for(int i = tar->size - 1; i >= ind; i--){
-			tar->children[i + 1] = tar->children[i];
-			tar->keys[i + 1] = tar->keys[i];
-		}
-		tar->keys[ind + 1] = new_block->keys[new_block->size - 1];
-		tar->children[ind + 1] = new_block->index;
-		tar->keys[ind] = child->keys[child->size - 1];
-		tar->children[ind] = child->index;
-		tar->size++;
-		my_file.write(tar, tar->index);
-		my_file.write(child, child->index);
-		my_file.write(new_block, new_block->index);
-	}
-
-	bool bool_Insert(block* cur, kv& value){
-		kv* pos = lower_bound(cur->keys, cur->keys + cur->size, value);
-		if(cur->size and *pos == value)return false;
-		int ind = pos - cur->keys;
-		if(cur->is_leaf){
-			for(int i = cur->size - 1; i >= ind; --i){
-				cur->keys[i + 1] = cur->keys[i];
-			}
-			cur->keys[ind] = value;
-			cur->size++;
-			my_file.write(cur, cur->index);
-			if(cur->size == N)return true;
-			else return false;
-		}
-		else{
-			if(ind == cur->size){
-				ind--;
-				cur->keys[cur->size - 1] = value;
-				my_file.write(cur, cur->index);
-			}
-			block* todo = my_file.read(cur->children[ind]);
-			if(bool_Insert(todo, value)){
-				split_child_block(cur, ind, todo);
-			}
-			if(cur->size == N)return true;
-			else return false;
-		}
-	}
-
-	void Insert(k& key, v value){
-		kv new_kv(key, value);
-		if(!root){
-			block* new_block = my_file.get_new_block();
-			root = new_block->index;
-			new_block->size = 1;
-			new_block->is_leaf = true;
-			new_block->keys[0] = new_kv;
-			return;
-		}
-		else{
-			block* root_block = my_file.read(root);
-			if(bool_Insert(root_block, new_kv)){
-				block* new_block = my_file.get_new_block();
-				new_block->is_leaf = false;
-				root_block->father = new_block->index;
-				new_block->children[0] = root_block->index;
-				new_block->keys[0] = root_block->keys[root_block->size - 1];
-				new_block->size = 1;
-				root = new_block->index;
-				split_child_block(new_block, 0, root_block);
-			}
-		}
-	}
-
-	sjtu::vector<v> Find(k& key){
+	sjtu::vector<v> Find(k1& key){
 		sjtu::vector<v> ans;
 		if(root){
 			block* tar = my_file.read(root);
@@ -1379,7 +1184,7 @@ public:
 						break;
 					}
 					for(int i = pos; i < end; ++i){
-						ans.push_back(tar->keys[i].value);
+						ans.push_back(my_list.read(tar->children[i]));
 					}
 					if(tar->next){
 						tar = my_file.read(tar->next);
@@ -1393,7 +1198,58 @@ public:
 		}
 		return ans;
 	}
-
+	sjtu::vector<k> FindAllKey(k1& key){
+		sjtu::vector<k> ans;
+		if(root){
+			block* tar = my_file.read(root);
+			while (true){
+				int pos = lower_bound(tar->keys, tar->keys + tar->size, key) - tar->keys;
+				if(pos == tar->size)return ans;
+				if(tar->is_leaf){
+					int end = upper_bound(tar->keys, tar->keys + tar->size, key) - tar->keys;
+					if(pos == end){
+						break;
+					}
+					for(int i = pos; i < end; ++i){
+						ans.push_back(tar->keys[i]);
+					}
+					if(tar->next){
+						tar = my_file.read(tar->next);
+					}
+					else break;
+				}
+				else{
+					tar = my_file.read(tar->children[pos]);
+				}
+			}
+		}
+		return ans;
+	}
+	void overwrite(k& key, v& value){
+		if(root){
+			block* tar = my_file.read(root);
+			while (true){
+				int pos = lower_bound(tar->keys, tar->keys + tar->size, key) - tar->keys;
+				if(pos == tar->size)return;
+				if(tar->is_leaf){
+					int end = upper_bound(tar->keys, tar->keys + tar->size, key) - tar->keys;
+					if(pos == end){
+						break;
+					}
+					for(int i = pos; i < end; ++i){
+						my_list.overwrite(value, tar->children[i]);
+					}
+					if(tar->next){
+						tar = my_file.read(tar->next);
+					}
+					else break;
+				}
+				else{
+					tar = my_file.read(tar->children[pos]);
+				}
+			}
+		}
+	}
 	void borrow_right(block* father, block* left_children, block* right_children, int ind){
 		left_children->children[left_children->size] = right_children->children[0];
 		left_children->keys[left_children->size] = right_children->keys[0];
@@ -1409,7 +1265,7 @@ public:
 			right_children->children[i] = right_children->children[i + 1];
 		}
 		right_children->children[right_children->size] = 0;
-		right_children->keys[right_children->size] = kv();
+		right_children->keys[right_children->size] = k();
 		father->keys[ind] = left_children->keys[left_children->size - 1];
 		my_file.write(father, father->index);
 		my_file.write(left_children, left_children->index);
@@ -1426,7 +1282,7 @@ public:
 		right_children->keys[0] = left_children->keys[left_children->size - 1];
 		left_children->size--;
 		left_children->children[left_children->size] = 0;
-		left_children->keys[left_children->size] = kv();
+		left_children->keys[left_children->size] = k();
 		if(!left_children->is_leaf){
 			block* changed_key = my_file.read(right_children->children[0]);
 			changed_key->father = right_children->index;
@@ -1460,21 +1316,24 @@ public:
 		father->children[ind] = left_children->index;
 		father->size--;
 		father->children[father->size] = 0;
-		father->keys[father->size] = kv();
+		father->keys[father->size] = k();
 		my_file.write(father, father->index);
 		my_file.write(left_children, left_children->index);
 	}
 
-	bool bool_Delete(block* cur, kv& value){
-		kv* pos = lower_bound(cur->keys, cur->keys + cur->size, value);
+	bool bool_Delete(block* cur, k& key, v&value){
+		k* pos = lower_bound(cur->keys, cur->keys + cur->size, key);
 		if(cur->is_leaf){
-			if(*pos == value){
+			if(*pos == key){
 				int ind = pos - cur->keys;
+				my_list.del(cur->children[ind]);
 				for(int i = ind; i < cur->size - 1; ++i){
 					cur->keys[i] = cur->keys[i + 1];
+					cur->children[i] = cur->children[i + 1];
 				}
 				cur->size--;
-				cur->keys[cur->size] = kv();
+				cur->keys[cur->size] = k();
+				cur->children[cur->size] = 0;
 				if(cur->size < M - 1)return true;
 				else return false;
 			}
@@ -1484,7 +1343,7 @@ public:
 			int ind = pos - cur->keys;
 			if(ind == cur->size)return false;
 			block* todo = my_file.read(cur->children[ind]);
-			bool f = bool_Delete(todo, value);
+			bool f = bool_Delete(todo, key, value);
 			cur->keys[ind] = todo->keys[todo->size - 1];
 			if(f){
 				block* left = nullptr, * right = nullptr;
@@ -1516,14 +1375,17 @@ public:
 	void Delete(k& key, v& value){
 		if(root){
 			block* root_block = my_file.read(root);
-			kv p(key, value);
-			bool_Delete(root_block, p);
+			bool_Delete(root_block, key, value);
 			if(root_block->size == 1 and !root_block->is_leaf){
 				root = root_block->children[0];
 				my_file.delete_block(root_block, root_block->index);
 				block* new_root = my_file.read(root);
 				new_root->father = 0;
 				my_file.write(new_root, new_root->index);
+			}
+			if(root_block->size == 0){
+				root = 0;
+				my_file.delete_block(root_block, root_block->index);
 			}
 		}
 	}
