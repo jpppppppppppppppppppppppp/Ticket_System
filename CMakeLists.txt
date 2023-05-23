@@ -5,7 +5,7 @@ set(CMAKE_CXX_STANDARD 14)
 
 add_executable(code
         src/main.cpp
-        src/bpt.hpp
+        src/BPT.hpp
         src/map.hpp
         src/utility.hpp
         src/exceptions.hpp
