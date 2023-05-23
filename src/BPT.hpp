@@ -1225,6 +1225,35 @@ public:
 		}
 		return ans;
 	}
+	std::pair<v, bool> FindExac(k& key){
+		std::pair<v, bool> ans;
+		ans.second = false;
+		if(root){
+			block* tar = my_file.read(root);
+			while (true){
+				int pos = lower_bound(tar->keys, tar->keys + tar->size, key) - tar->keys;
+				if(pos == tar->size)return ans;
+				if(tar->is_leaf){
+					int end = upper_bound(tar->keys, tar->keys + tar->size, key) - tar->keys;
+					if(pos == end){
+						break;
+					}
+					for(int i = pos; i < end; ++i){
+						ans.first = my_list.read(tar->children[i]);
+						ans.second = true;
+					}
+					if(tar->next){
+						tar = my_file.read(tar->next);
+					}
+					else break;
+				}
+				else{
+					tar = my_file.read(tar->children[pos]);
+				}
+			}
+		}
+		return ans;
+	}
 	void overwrite(k& key, v& value){
 		if(root){
 			block* tar = my_file.read(root);

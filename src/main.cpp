@@ -565,13 +565,16 @@ int main(){
 				my_string<25>user_name(uu);
 				my_string<25>cur_name(cc);
 				if(loginuser.find(cur_name)==loginuser.end())flag= false;
-				auto ans = userbank.Find(user_name);
-				if(ans.empty())flag = false;
 				if(flag){
-					int cur_g = userbank.Find(cur_name)[0].privilege;
-					if(ans[0].privilege < cur_g or cc == uu){
-						user u = ans[0];
-						cout << timestamp << ' ' << uu << ' ' << u.name << ' ' << u.mailAddr << ' ' << u.privilege << '\n';
+					auto ans = userbank.FindExac(user_name);
+					if(!ans.second)flag = false;
+					if(flag){
+						int cur_g = userbank.FindExac(cur_name).first.privilege;
+						if(ans.first.privilege < cur_g or cc == uu){
+							user u = ans.first;
+							cout << timestamp << ' ' << uu << ' ' << u.name << ' ' << u.mailAddr << ' ' << u.privilege
+							     << '\n';
+						}else cout << timestamp << " -1\n";
 					}
 					else cout << timestamp << " -1\n";
 				}else cout << timestamp << " -1\n";
@@ -623,12 +626,12 @@ int main(){
 					}
 				}
 				my_string<25>cur_name(cc),user_name(uu);
-				auto ans = userbank.Find(user_name);
+				auto ans = userbank.FindExac(   user_name);
 
-				if(loginuser.find(cur_name)!=loginuser.end() and !(ans.empty())){
-					int cur_g = userbank.Find(cur_name)[0].privilege;
-					if((cur_g > ans[0].privilege or cc == uu) and (!g or gg < cur_g)){
-						user u = ans[0];
+				if(loginuser.find(cur_name)!=loginuser.end() and ans.second){
+					int cur_g = userbank.FindExac(cur_name).first.privilege;
+					if((cur_g > ans.first.privilege or cc == uu) and (!g or gg < cur_g)){
+						user u = ans.first;
 						if(!pp.empty())strcpy(u.password.ch, pp.c_str());
 						if(!nn.empty())strcpy(u.name.ch, nn.c_str());
 						if(!mm.empty())strcpy(u.mailAddr.ch, mm.c_str());
@@ -685,9 +688,9 @@ int main(){
 				std::string infor;
 				cin >> infor;
 				my_string<25>trainID(infor);
-				auto tr = trainbank.Find(trainID);
-				if(!(tr.empty()) and !(tr[0].is_release)){
-					train tra = tr[0];
+				auto tr = trainbank.FindExac(trainID);
+				if(tr.second and !(tr.first.is_release)){
+					train tra = tr.first;
 					tra.is_release = true;
 					for(int i = 0; i < tra.stationNum; ++i){
 						stationinfor si(tra.stations[i],trainID,i);
@@ -748,13 +751,13 @@ int main(){
 				my_string<25>trainID(ii);
 				my_string<25>username(uu);
 				bool flag = true;
-				auto tr = trainbank.Find(trainID);
+				auto tr = trainbank.FindExac(trainID);
 				my_string<35>from(ff);
 				my_string<35>to(tt);
 				int ind1=-1,ind2=-1;
-				if(tr.empty())flag = false;
+				if(!(tr.second))flag = false;
 				if(loginuser.find(username)!=loginuser.end()){
-					train tra = tr[0];
+					train tra = tr.first;
 					if(!tra.is_release)flag = false;
 					else{
 						for(int i = 0; i < tra.stationNum; ++i){
@@ -767,7 +770,7 @@ int main(){
 					}
 				}else flag = false;
 				if(flag){
-					train tra = tr[0];
+					train tra = tr.first;
 					my_date dateNeed(dd);
 					my_date useless = dateNeed.minus_time(tra.leaveTime[ind1]);
 					if(!(tra.beginSale <= useless and useless <= tra.endSale))flag = false;
@@ -775,7 +778,7 @@ int main(){
 					if(seatNeed > tra.seatNum)flag = false;
 					if(flag){
 						dateAndtrainID dat(useless, trainID);
-						auto s = allseats.Find(dat)[0];
+						auto s = allseats.FindExac(dat).first;
 						int min_seat = tra.seatNum;
 						for(int i = ind1; i < ind2; ++i){
 							if(s.seat[i] < min_seat)min_seat = s.seat[i];
@@ -858,13 +861,13 @@ int main(){
 							}
 							trainid id1 = trainlist1[ptr1].ID;
 							trainid id2 = trainlist2[ptr2].ID;
-							train tr = trainbank.Find(id1.trainID)[0];
+							train tr = trainbank.FindExac(id1.trainID).first;
 							bool time_val = false;
 							my_date useless = dateNeed.minus_time(tr.leaveTime[id1.num]);
 							if(tr.beginSale <= useless and useless <= tr.endSale)time_val = true;
 							if(time_val){
 								dateAndtrainID dat(useless, id1.trainID);
-								seats s = allseats.Find(dat)[0];
+								seats s = allseats.FindExac(dat).first;
 								int min_seat = tr.seatNum;
 								for(int i = id1.num; i < id2.num; ++i){
 									if(s.seat[i] < min_seat)min_seat = s.seat[i];
@@ -901,13 +904,13 @@ int main(){
 							}
 							trainid id1 = trainlist1[ptr1].ID;
 							trainid id2 = trainlist2[ptr2].ID;
-							train tr = trainbank.Find(id1.trainID)[0];
+							train tr = trainbank.FindExac(id1.trainID).first;
 							bool time_val = false;
 							my_date useless = dateNeed.minus_time(tr.leaveTime[id1.num]);
 							if(tr.beginSale <= useless and useless <= tr.endSale)time_val = true;
 							if(time_val){
 								dateAndtrainID dat(useless, id1.trainID);
-								seats s = allseats.Find(dat)[0];
+								seats s = allseats.FindExac(dat).first;
 								int min_seat = tr.seatNum;
 								for(int i = id1.num; i < id2.num; ++i){
 									if(s.seat[i] < min_seat)min_seat = s.seat[i];
@@ -967,7 +970,7 @@ int main(){
 					if(n <= allorders.size()){
 						order tar = allorders[n - 1];
 						int ind1 = 0, ind2 = 0;
-						train tr = trainbank.Find(tar.trainID)[0];
+						train tr = trainbank.FindExac(tar.trainID).first;
 						for(int i = 0; i < tr.stationNum; ++i){
 							if(tr.stations[i] == tar.from)ind1 = i;
 							if(tr.stations[i] == tar.to)ind2 = i;
@@ -977,7 +980,7 @@ int main(){
 							orderinfor od(username, tar.time);
 							orders.overwrite(od, tar);
 							dateAndtrainID dat(tar.whichday, tar.trainID);
-							seats s = allseats.Find(dat)[0];
+							seats s = allseats.FindExac(dat).first;
 							for(int i = ind1; i < ind2; ++i){
 								s.seat[i] += tar.num;
 							}
@@ -1048,16 +1051,16 @@ int main(){
 				}
 				my_string<25>trainID(ii);
 				my_date dateNeed(dd);
-				auto tr = trainbank.Find(trainID);
-				if(!(tr.empty()) and tr[0].beginSale <= dateNeed and dateNeed <= tr[0].endSale){
+				auto tr = trainbank.FindExac(trainID);
+				if(tr.second and tr.first.beginSale <= dateNeed and dateNeed <= tr.first.endSale){
 					dateAndtrainID dat(dateNeed, trainID);
-					auto s = allseats.Find(dat);
-					train tra = tr[0];
+					auto s = allseats.FindExac(dat);
+					train tra = tr.first;
 					cout << timestamp << ' ' << trainID << ' ' << tra.type << '\n';
 					for(int i = 0; i < tra.stationNum; ++i){
 						cout << tra.stations[i] << ' ' << date_time(dateNeed , tra.arriveTime[i]) << " -> " << date_time(dateNeed, tra.leaveTime[i]) << ' ' << tra.prices[i] << ' ';
 						if(i != tra.stationNum-1){
-							if(!(s.empty()))cout << s[0].seat[i] << '\n';
+							if(s.second)cout << s.first.seat[i] << '\n';
 							else cout << tra.seatNum << '\n';
 						}
 						else cout << "x\n";
@@ -1103,18 +1106,18 @@ int main(){
 				trainInforSortbyTime ans2{};
 				for(int i = 0; i < alltrian.size(); ++i){
 					trainid stationInformation = alltrian[i].ID;
-					train tr1 = trainbank.Find(stationInformation.trainID)[0];
+					train tr1 = trainbank.FindExac(stationInformation.trainID).first;
 					my_date date1 = dateNeed.minus_time(tr1.leaveTime[stationInformation.num]);
 					if(!(tr1.beginSale <= date1 and date1 <= tr1.endSale))continue;
 					dateAndtrainID dat1(date1, stationInformation.trainID);
-					seats s = allseats.Find(dat1)[0];
+					seats s = allseats.FindExac(dat1).first;
 					int num1 = s.seat[stationInformation.num];
 					for(int j = stationInformation.num + 1; j < tr1.stationNum; ++j){
 						if(s.seat[j-1]<num1)num1 = s.seat[j-1];
 						auto alltrain2 = stations.FindAllKey(tr1.stations[j]);
 						for(int k = 0; k < alltrain2.size(); ++k){
 							trainid stationInformation2 = alltrain2[k].ID;
-							train tr2 = trainbank.Find(stationInformation2.trainID)[0];
+							train tr2 = trainbank.FindExac(stationInformation2.trainID).first;
 							bool tr_val = false;
 							int l;
 							for(l = stationInformation2.num + 1; l < tr2.stationNum; ++l){
@@ -1132,7 +1135,7 @@ int main(){
 									if(date2 <= tr2.endSale){
 										if(date2 < tr2.beginSale)date2 = tr2.beginSale;
 										dateAndtrainID dat2(date2, stationInformation2.trainID);
-										seats s2 = allseats.Find(dat2)[0];
+										seats s2 = allseats.FindExac(dat2).first;
 										int num2 = tr2.seatNum;
 										for(int m = stationInformation2.num; m < l; ++m){
 											if(s2.seat[m] < num2)num2 = s2.seat[m];
@@ -1225,7 +1228,7 @@ int main(){
 				std::string ii;
 				cin >> opt2 >> ii;
 				my_string<25>trainID(ii);
-				train tr = trainbank.Find(trainID)[0];
+				train tr = trainbank.FindExac(trainID).first;
 				if(!tr.is_release){
 					trainbank.Delete(trainID, tr);
 					cout << timestamp << " 0\n";
