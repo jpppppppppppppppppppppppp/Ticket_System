@@ -1061,7 +1061,7 @@ public:
 template <typename k1,typename k, typename v>
 class BPT {
 public:
-	static constexpr int N = 1024 * 8 / (sizeof(k) + sizeof(int));
+	static constexpr int N = 200;
 	static constexpr int M = N / 2;
 	struct block {
 		int size = 0;
