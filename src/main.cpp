@@ -4,7 +4,7 @@
 #include <cstring>
 using std::cout;
 using std::cin;
-
+std::hash<std::string> hash;
 inline int str_to_int(std::string & str){
 	if(str == "_")return 0;
 	int ans = 0;
@@ -48,8 +48,8 @@ struct user{
 		return true;
 	}
 };
-BPT<my_string<25>, my_string<25>,user>userbank("userbank");
-sjtu::map<my_string<25>, int>loginuser;
+BPT<size_t, size_t,user>userbank("userbank");
+sjtu::map<size_t, int>loginuser;
 struct my_time{
 	int hh=0,mi=0;
 	my_time(){}
@@ -199,7 +199,7 @@ struct train {
 		memset(stations, 0,sizeof(stations));
 	}
 };
-BPT<my_string<25>,my_string<25>,train>trainbank("trainbank");
+BPT<size_t,size_t,train>trainbank("trainbank");
 struct trainid{
 	my_string<25>trainID;
 	int num=0;
@@ -468,7 +468,7 @@ struct trainInforSortbyPrice{
 };
 
 int main(){
-//	freopen("../testcases/pressure_3_easy/1.in","r",stdin);
+//	freopen("../testcases/basic_1/1.in","r",stdin);
 //	freopen("test.txt","w",stdout);
 	std::ios::sync_with_stdio(false);
 	cin.tie(0),cout.tie(0);
@@ -487,10 +487,10 @@ int main(){
 					if(opt2 == "-c"){
 						cin >> cc;
 						my_string<25>cur_user(cc);
-						auto ans = loginuser.find(cur_user);
+						auto ans = loginuser.find(hash(cur_user.ch));
 						if(!userbank.empty()){
 							if(ans == loginuser.end())flag = false;
-							else cgg = loginuser[cur_user];
+							else cgg = loginuser[hash(cur_user.ch)];
 						}
 					}
 					else if(opt2 == "-u"){
@@ -514,10 +514,10 @@ int main(){
 				if(!userbank.empty() and cgg <= gg)flag = false;
 				if(userbank.empty())gg = 10;
 				my_string<25>user_name(uu);
-				if(!(userbank.Find(user_name).empty()))flag = false;
+				if(!(userbank.Find(hash(user_name.ch)).empty()))flag = false;
 				if(flag){
 					user new_user(pp,nn,mm,gg);
-					userbank.Insert(user_name, new_user);
+					userbank.Insert(hash(user_name.ch), new_user);
 					cout << timestamp << " 0\n";
 				}else cout << timestamp << " -1\n";
 			}
@@ -535,9 +535,9 @@ int main(){
 					else flag = false;
 				}
 				my_string<25>user_name(uu);
-				auto ans = userbank.FindExac(user_name);
-				if(ans.second and ans.first.password == pp and loginuser.find(user_name)==loginuser.end() and flag){
-					loginuser[user_name] = ans.first.privilege;
+				auto ans = userbank.FindExac(hash(user_name.ch));
+				if(ans.second and ans.first.password == pp and loginuser.find(hash(user_name.ch))==loginuser.end() and flag){
+					loginuser[hash(user_name.ch)] = ans.first.privilege;
 					cout << timestamp << " 0\n";
 				}else cout << timestamp << " -1\n";
 			}
@@ -545,7 +545,7 @@ int main(){
 				std::string uu;
 				cin >> opt2 >> uu;
 				my_string<25>user_name(uu);
-				auto iter = loginuser.find(user_name);
+				auto iter = loginuser.find(hash(user_name.ch));
 				if(iter!=loginuser.end()){
 					loginuser.erase(iter);
 					cout << timestamp << " 0\n";
@@ -564,12 +564,12 @@ int main(){
 				bool flag = true;
 				my_string<25>user_name(uu);
 				my_string<25>cur_name(cc);
-				if(loginuser.find(cur_name)==loginuser.end())flag= false;
+				if(loginuser.find(hash(cur_name.ch))==loginuser.end())flag= false;
 				if(flag){
-					auto ans = userbank.FindExac(user_name);
+					auto ans = userbank.FindExac(hash(user_name.ch));
 					if(!ans.second)flag = false;
 					if(flag){
-						int cur_g = loginuser[cur_name];
+						int cur_g = loginuser[hash(cur_name.ch)];
 						if(ans.first.privilege < cur_g or cc == uu){
 							user u = ans.first;
 							cout << timestamp << ' ' << uu << ' ' << u.name << ' ' << u.mailAddr << ' ' << u.privilege
@@ -626,20 +626,20 @@ int main(){
 					}
 				}
 				my_string<25>cur_name(cc),user_name(uu);
-				auto ans = userbank.FindExac(   user_name);
+				auto ans = userbank.FindExac(hash(user_name.ch));
 
-				if(loginuser.find(cur_name)!=loginuser.end() and ans.second){
-					int cur_g = userbank.FindExac(cur_name).first.privilege;
+				if(loginuser.find(hash(cur_name.ch))!=loginuser.end() and ans.second){
+					int cur_g = userbank.FindExac(hash(cur_name.ch)).first.privilege;
 					if((cur_g > ans.first.privilege or cc == uu) and (!g or gg < cur_g)){
 						user u = ans.first;
 						if(!pp.empty())strcpy(u.password.ch, pp.c_str());
 						if(!nn.empty())strcpy(u.name.ch, nn.c_str());
 						if(!mm.empty())strcpy(u.mailAddr.ch, mm.c_str());
 						if(g)u.privilege = gg;
-						if(loginuser.find(user_name) != loginuser.end())loginuser[user_name] = u.privilege;
+						if(loginuser.find(hash(user_name.ch)) != loginuser.end())loginuser[hash(user_name.ch)] = u.privilege;
 						cout << timestamp << ' ' << uu << ' ' << u.name << ' ' << u.mailAddr << ' ' << u.privilege
 						     << '\n';
-						userbank.overwrite(user_name, u);
+						userbank.overwrite(hash(user_name.ch), u);
 					}else cout << timestamp << " -1\n";
 				}else cout << timestamp << " -1\n";
 			}
@@ -652,7 +652,7 @@ int main(){
 					information[opt2] = infor;
 				}
 				my_string<25>trainID(information["-i"]);
-				if(trainbank.Find(trainID).empty()){
+				if(trainbank.Find(hash(trainID.ch)).empty()){
 					train new_train;
 					new_train.stationNum = str_to_int(information["-n"]);
 					new_train.seatNum = str_to_int(information["-m"]);
@@ -678,7 +678,7 @@ int main(){
 					new_train.stations[i] = ss[i];
 					new_train.arriveTime[i] = new_train.leaveTime[i-1].add_mi(str_to_int(tt[i-1]));
 					new_train.leaveTime[i] = my_time(-1,-1);
-					trainbank.Insert(trainID,new_train);
+					trainbank.Insert(hash(trainID.ch),new_train);
 					cout << timestamp << " 0\n";
 
 				}else cout << timestamp << " -1\n";
@@ -688,7 +688,7 @@ int main(){
 				std::string infor;
 				cin >> infor;
 				my_string<25>trainID(infor);
-				auto tr = trainbank.FindExac(trainID);
+				auto tr = trainbank.FindExac(hash(trainID.ch));
 				if(tr.second and !(tr.first.is_release)){
 					train tra = tr.first;
 					tra.is_release = true;
@@ -703,7 +703,7 @@ int main(){
 						useless.add(1);
 					}
 					cout << timestamp << " 0\n";
-					trainbank.overwrite(trainID, tra);
+					trainbank.overwrite(hash(trainID.ch), tra);
 				}else cout << timestamp << " -1\n";
 			}
 			else if(opt == "buy_ticket"){
@@ -751,12 +751,12 @@ int main(){
 				my_string<25>trainID(ii);
 				my_string<25>username(uu);
 				bool flag = true;
-				auto tr = trainbank.FindExac(trainID);
+				auto tr = trainbank.FindExac(hash(trainID.ch));
 				my_string<35>from(ff);
 				my_string<35>to(tt);
 				int ind1=-1,ind2=-1;
 				if(!(tr.second))flag = false;
-				if(loginuser.find(username)!=loginuser.end()){
+				if(loginuser.find(hash(username.ch))!=loginuser.end()){
 					train tra = tr.first;
 					if(!tra.is_release)flag = false;
 					else{
@@ -861,7 +861,7 @@ int main(){
 							}
 							trainid id1 = trainlist1[ptr1].ID;
 							trainid id2 = trainlist2[ptr2].ID;
-							train tr = trainbank.FindExac(id1.trainID).first;
+							train tr = trainbank.FindExac(hash(id1.trainID.ch)).first;
 							bool time_val = false;
 							my_date useless = dateNeed.minus_time(tr.leaveTime[id1.num]);
 							if(tr.beginSale <= useless and useless <= tr.endSale)time_val = true;
@@ -904,7 +904,7 @@ int main(){
 							}
 							trainid id1 = trainlist1[ptr1].ID;
 							trainid id2 = trainlist2[ptr2].ID;
-							train tr = trainbank.FindExac(id1.trainID).first;
+							train tr = trainbank.FindExac(hash(id1.trainID.ch)).first;
 							bool time_val = false;
 							my_date useless = dateNeed.minus_time(tr.leaveTime[id1.num]);
 							if(tr.beginSale <= useless and useless <= tr.endSale)time_val = true;
@@ -934,7 +934,7 @@ int main(){
 				std::string user;
 				cin >> opt2 >> user;
 				my_string<25>username(user);
-				if(loginuser.find(username)!=loginuser.end()){
+				if(loginuser.find(hash(username.ch))!=loginuser.end()){
 					sjtu::vector<order>allorders = orders.Find(username);
 					cout << timestamp << ' ' << allorders.size() << '\n';
 					for(int i=0;i<allorders.size();i++){
@@ -965,12 +965,12 @@ int main(){
 				int n = 1;
 				if(!nn.empty())n = str_to_int(nn);
 				my_string<25>username(uu);
-				if(loginuser.find(username)!=loginuser.end()){
+				if(loginuser.find(hash(username.ch))!=loginuser.end()){
 					sjtu::vector<order> allorders = orders.Find(username);
 					if(n <= allorders.size()){
 						order tar = allorders[n - 1];
 						int ind1 = 0, ind2 = 0;
-						train tr = trainbank.FindExac(tar.trainID).first;
+						train tr = trainbank.FindExac(hash(tar.trainID.ch)).first;
 						for(int i = 0; i < tr.stationNum; ++i){
 							if(tr.stations[i] == tar.from)ind1 = i;
 							if(tr.stations[i] == tar.to)ind2 = i;
@@ -1051,7 +1051,7 @@ int main(){
 				}
 				my_string<25>trainID(ii);
 				my_date dateNeed(dd);
-				auto tr = trainbank.FindExac(trainID);
+				auto tr = trainbank.FindExac(hash(trainID.ch));
 				if(tr.second and tr.first.beginSale <= dateNeed and dateNeed <= tr.first.endSale){
 					dateAndtrainID dat(dateNeed, trainID);
 					auto s = allseats.FindExac(dat);
@@ -1106,7 +1106,7 @@ int main(){
 				trainInforSortbyTime ans2{};
 				for(int i = 0; i < alltrian.size(); ++i){
 					trainid stationInformation = alltrian[i].ID;
-					train tr1 = trainbank.FindExac(stationInformation.trainID).first;
+					train tr1 = trainbank.FindExac(hash(stationInformation.trainID.ch)).first;
 					my_date date1 = dateNeed.minus_time(tr1.leaveTime[stationInformation.num]);
 					if(!(tr1.beginSale <= date1 and date1 <= tr1.endSale))continue;
 					dateAndtrainID dat1(date1, stationInformation.trainID);
@@ -1117,7 +1117,7 @@ int main(){
 						auto alltrain2 = stations.FindAllKey(tr1.stations[j]);
 						for(int k = 0; k < alltrain2.size(); ++k){
 							trainid stationInformation2 = alltrain2[k].ID;
-							train tr2 = trainbank.FindExac(stationInformation2.trainID).first;
+							train tr2 = trainbank.FindExac(hash(stationInformation2.trainID.ch)).first;
 							bool tr_val = false;
 							int l;
 							for(l = stationInformation2.num + 1; l < tr2.stationNum; ++l){
@@ -1228,9 +1228,9 @@ int main(){
 				std::string ii;
 				cin >> opt2 >> ii;
 				my_string<25>trainID(ii);
-				train tr = trainbank.FindExac(trainID).first;
+				train tr = trainbank.FindExac(hash(trainID.ch)).first;
 				if(!tr.is_release){
-					trainbank.Delete(trainID, tr);
+					trainbank.Delete(hash(trainID.ch), tr);
 					cout << timestamp << " 0\n";
 				}else cout << timestamp << " -1\n";
 			}

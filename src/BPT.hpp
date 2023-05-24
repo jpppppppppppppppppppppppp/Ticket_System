@@ -18,7 +18,7 @@ struct my_string {
 	my_string(){
 		memset(ch,0,sizeof(ch));
 	}
-
+	~my_string(){}
 	my_string(const std::string& s){ memset(ch,0,sizeof(ch));strcpy(ch, s.c_str()); }
 
 	my_string(char* c){ memset(ch,0,sizeof(ch));strcpy(ch, c); }
@@ -623,7 +623,7 @@ public:
 	};
 	list_node * head;
 	list_node * tail;
-	static const int hash_size = 1024 * 1024 * 2 / sizeof(data);
+	static const int hash_size = 1024 * 1024 * 1.8 / sizeof(data);
 	int block_num = 0;
 	int root = 0;
 	struct hash_node{
@@ -1061,7 +1061,7 @@ public:
 template <typename k1,typename k, typename v>
 class BPT {
 public:
-	static constexpr int N = 200;
+	static constexpr int N = 1024 * 8 / (sizeof(k) + sizeof(int));
 	static constexpr int M = N / 2;
 	struct block {
 		int size = 0;
@@ -1147,7 +1147,7 @@ public:
 		}
 	}
 
-	void Insert(k& key, v value){
+	void Insert(k key, v value){
 		if(!root){
 			block* new_block = my_file.get_new_block();
 			root = new_block->index;
@@ -1172,7 +1172,7 @@ public:
 		}
 	}
 
-	sjtu::vector<v> Find(k1& key){
+	sjtu::vector<v> Find(k1 key){
 		sjtu::vector<v> ans;
 		if(root){
 			block* tar = my_file.read(root);
@@ -1226,7 +1226,7 @@ public:
 		}
 		return ans;
 	}
-	sjtu::pair<v, bool> FindExac(k& key){
+	sjtu::pair<v, bool> FindExac(k key){
 		sjtu::pair<v, bool> ans;
 		ans.second = false;
 		if(root){
@@ -1255,7 +1255,7 @@ public:
 		}
 		return ans;
 	}
-	void overwrite(k& key, v& value){
+	void overwrite(k key, v& value){
 		if(root){
 			block* tar = my_file.read(root);
 			while (true){
@@ -1402,7 +1402,7 @@ public:
 		}
 	}
 
-	void Delete(k& key, v& value){
+	void Delete(k key, v& value){
 		if(root){
 			block* root_block = my_file.read(root);
 			bool_Delete(root_block, key, value);
