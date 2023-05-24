@@ -48,7 +48,7 @@ struct user{
 		return true;
 	}
 };
-BPT<size_t, size_t,user>userbank("userbank");
+BPT_old<size_t,user>userbank("userbank");
 sjtu::map<size_t, int>loginuser;
 struct my_time{
 	int hh=0,mi=0;
@@ -514,7 +514,7 @@ int main(){
 				if(!userbank.empty() and cgg <= gg)flag = false;
 				if(userbank.empty())gg = 10;
 				my_string<25>user_name(uu);
-				if(!(userbank.Find(hash(user_name.ch)).empty()))flag = false;
+				if(userbank.Find(hash(user_name.ch)) != nullptr)flag = false;
 				if(flag){
 					user new_user(pp,nn,mm,gg);
 					userbank.Insert(hash(user_name.ch), new_user);
@@ -535,9 +535,9 @@ int main(){
 					else flag = false;
 				}
 				my_string<25>user_name(uu);
-				auto ans = userbank.FindExac(hash(user_name.ch));
-				if(ans.second and ans.first.password == pp and loginuser.find(hash(user_name.ch))==loginuser.end() and flag){
-					loginuser[hash(user_name.ch)] = ans.first.privilege;
+				auto ans = userbank.Find(hash(user_name.ch));
+				if(ans != nullptr and ans->password == pp and loginuser.find(hash(user_name.ch))==loginuser.end() and flag){
+					loginuser[hash(user_name.ch)] = ans->privilege;
 					cout << timestamp << " 0\n";
 				}else cout << timestamp << " -1\n";
 			}
@@ -566,13 +566,12 @@ int main(){
 				my_string<25>cur_name(cc);
 				if(loginuser.find(hash(cur_name.ch))==loginuser.end())flag= false;
 				if(flag){
-					auto ans = userbank.FindExac(hash(user_name.ch));
-					if(!ans.second)flag = false;
+					auto ans = userbank.Find(hash(user_name.ch));
+					if(ans == nullptr)flag = false;
 					if(flag){
 						int cur_g = loginuser[hash(cur_name.ch)];
-						if(ans.first.privilege < cur_g or cc == uu){
-							user u = ans.first;
-							cout << timestamp << ' ' << uu << ' ' << u.name << ' ' << u.mailAddr << ' ' << u.privilege
+						if(ans->privilege < cur_g or cc == uu){
+							cout << timestamp << ' ' << uu << ' ' << ans->name << ' ' << ans->mailAddr << ' ' << ans->privilege
 							     << '\n';
 						}else cout << timestamp << " -1\n";
 					}
@@ -626,20 +625,18 @@ int main(){
 					}
 				}
 				my_string<25>cur_name(cc),user_name(uu);
-				auto ans = userbank.FindExac(hash(user_name.ch));
+				auto ans = userbank.Find(hash(user_name.ch));
 
-				if(loginuser.find(hash(cur_name.ch))!=loginuser.end() and ans.second){
-					int cur_g = userbank.FindExac(hash(cur_name.ch)).first.privilege;
-					if((cur_g > ans.first.privilege or cc == uu) and (!g or gg < cur_g)){
-						user u = ans.first;
-						if(!pp.empty())strcpy(u.password.ch, pp.c_str());
-						if(!nn.empty())strcpy(u.name.ch, nn.c_str());
-						if(!mm.empty())strcpy(u.mailAddr.ch, mm.c_str());
-						if(g)u.privilege = gg;
-						if(loginuser.find(hash(user_name.ch)) != loginuser.end())loginuser[hash(user_name.ch)] = u.privilege;
-						cout << timestamp << ' ' << uu << ' ' << u.name << ' ' << u.mailAddr << ' ' << u.privilege
+				if(loginuser.find(hash(cur_name.ch))!=loginuser.end() and ans!= nullptr){
+					int cur_g = userbank.Find(hash(cur_name.ch))->privilege;
+					if((cur_g > ans->privilege or cc == uu) and (!g or gg < cur_g)){
+						if(!pp.empty())strcpy(ans->password.ch, pp.c_str());
+						if(!nn.empty())strcpy(ans->name.ch, nn.c_str());
+						if(!mm.empty())strcpy(ans->mailAddr.ch, mm.c_str());
+						if(g)ans->privilege = gg;
+						if(loginuser.find(hash(user_name.ch)) != loginuser.end())loginuser[hash(user_name.ch)] = ans->privilege;
+						cout << timestamp << ' ' << uu << ' ' << ans->name << ' ' << ans->mailAddr << ' ' << ans->privilege
 						     << '\n';
-						userbank.overwrite(hash(user_name.ch), u);
 					}else cout << timestamp << " -1\n";
 				}else cout << timestamp << " -1\n";
 			}
