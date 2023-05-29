@@ -623,7 +623,7 @@ public:
 	};
 	list_node * head;
 	list_node * tail;
-	static const int hash_size = 1024 * 1024 * 1.8 / sizeof(data);
+	static const int hash_size = 1024 * 1024 * 1.5 / sizeof(data);
 	int block_num = 0;
 	int root = 0;
 	struct hash_node{
@@ -1061,7 +1061,7 @@ public:
 template <typename k1,typename k, typename v>
 class BPT {
 public:
-	static constexpr int N = 1024 * 8 / (sizeof(k) + sizeof(int));
+	static constexpr int N = 1024 * 16 / (sizeof(k) + sizeof(int));
 	static constexpr int M = N / 2;
 	struct block {
 		int size = 0;

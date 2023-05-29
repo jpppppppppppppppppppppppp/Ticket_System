@@ -466,9 +466,10 @@ struct trainInforSortbyPrice{
 		return io;
 	}
 };
-
+#include <ctime>
+double be=0,en=0,cost=0;
 int main(){
-//	freopen("../testcases/basic_1/1.in","r",stdin);
+//	freopen("../testcases/pressure_3_easy/5.in","r",stdin);
 //	freopen("test.txt","w",stdout);
 	std::ios::sync_with_stdio(false);
 	cin.tie(0),cout.tie(0);
@@ -477,6 +478,10 @@ int main(){
 			break;
 		}else{
 			cin >> timestamp;
+			en = clock();
+			cost += en-be;
+			cout << en-be <<'\n';
+			be = en;
 			cin >> opt;
 			if(opt == "add_user"){
 				std::string cc,uu,pp,nn,mm;
@@ -1237,5 +1242,6 @@ int main(){
 			}else return -1;
 		}
 	}
+	cout << cost;
 	return 0;
 } 
