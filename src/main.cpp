@@ -484,7 +484,7 @@ struct trainID_seat_price_date_time{
 	}
 };
 int main(){
-//	freopen("../testcases/pressure_3_easy/1.in","r",stdin);
+//	freopen("../testcases/basic_6/10.in","r",stdin);
 //	freopen("test.txt","w",stdout);
 	std::ios::sync_with_stdio(false);
 	cin.tie(0),cout.tie(0);
@@ -1151,7 +1151,7 @@ int main(){
 									if(date2 < tr2.beginSale)date2 = tr2.beginSale;
 									seats s2 = allseats.FindExac(dateAndtrainID(date2, atf.ID.trainID)).first;
 									int seatNum = tr2.seatNum;
-									for(int l = k; l < atf.ID.num; ++l){
+									for(int l = j; l < atf.ID.num; ++l){
 										seatNum = std::min(seatNum, s2.seat[l]);
 									}
 									int key_time = 0, key_cost = 0;
