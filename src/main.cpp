@@ -103,20 +103,20 @@ struct my_date{
 		mm = x;
 		dd = y;
 	}
-	my_date& add(int x){
+	inline my_date& add(int x){
 		dd += x;
 		if(mm == 6 and dd >= 31)mm = 7, dd -= 30;
 		if(mm == 7 and dd >= 32)mm = 8, dd -= 31;
 		return *this;
 	}
-	my_date add_time(my_time & t){
+	inline my_date add_time(my_time & t){
 		int d = dd + t.hh / 24;
 		int m = mm;
 		if(m == 6 and d >= 31)m = 7, d -= 30;
 		if(m == 7 and d >= 32)m = 8, d -= 31;
 		return my_date(m,d);
 	}
-	my_date minus_time(my_time & t){
+	inline my_date minus_time(my_time & t){
 		int d = dd - t.hh / 24;
 		int m = mm;
 		if(m == 8 and d <= 0)m = 7, d += 31;
@@ -466,9 +466,25 @@ struct trainInforSortbyPrice{
 		return io;
 	}
 };
-
+struct trainID_seat_price_date_time{
+	my_string<25>trainName;
+	int seatNum;
+	int price;
+	my_date date;
+	my_time time;
+	my_time time_to_start;
+	trainID_seat_price_date_time(){}
+	trainID_seat_price_date_time(my_string<25>&tr, int s, int p, my_date& da, my_time& ti, my_time& t2){
+		trainName = tr;
+		seatNum = s;
+		price = p;
+		date = da;
+		time = ti;
+		time_to_start = t2;
+	}
+};
 int main(){
-//	freopen("../testcases/pressure_3_easy/5.in","r",stdin);
+//	freopen("../testcases/pressure_3_easy/1.in","r",stdin);
 //	freopen("test.txt","w",stdout);
 	std::ios::sync_with_stdio(false);
 	cin.tie(0),cout.tie(0);
@@ -1096,120 +1112,114 @@ int main(){
 				std::string p = "time";
 				if(!pp.empty())p = pp;
 				my_date dateNeed(dd);
-				auto alltrian = stations.FindAllKey(from);
+				auto alltrianfrom = stations.FindAllKey(from);
+				auto alltrainto = stations.FindAllKey(to);
+				if(alltrianfrom.empty() or alltrainto.empty()){
+					cout << timestamp << " 0\n";
+					continue;
+				}
+				sjtu::map<my_string<35>, sjtu::vector<trainID_seat_price_date_time>>me;
+				for(int i = 0; i < alltrianfrom.size(); ++i){
+					stationinfor atf = alltrianfrom[i];
+					train tr = trainbank.FindExac(hash(atf.ID.trainID.ch)).first;
+					my_date date1 = dateNeed.minus_time(tr.leaveTime[atf.ID.num]);
+					if(!(tr.beginSale <= date1 and date1 <= tr.endSale))continue;
+					seats s = allseats.FindExac(dateAndtrainID(date1, atf.ID.trainID)).first;
+					int seatNum = tr.seatNum;
+					for(int j = atf.ID.num + 1; j < tr.stationNum; ++j){
+						seatNum = std::min(seatNum, s.seat[j-1]);
+						me[tr.stations[j]].push_back(trainID_seat_price_date_time(atf.ID.trainID,seatNum,tr.prices[j] - tr.prices[atf.ID.num], date1,tr.arriveTime[j], tr.leaveTime[atf.ID.num]));
+					}
+				}
 				bool is_ans = false;
 				int ans_time=0,ans_cost=0;
 				trainInforSortbyTime ans1{};
 				trainInforSortbyTime ans2{};
-				for(int i = 0; i < alltrian.size(); ++i){
-					trainid stationInformation = alltrian[i].ID;
-					train tr1 = trainbank.FindExac(hash(stationInformation.trainID.ch)).first;
-					my_date date1 = dateNeed.minus_time(tr1.leaveTime[stationInformation.num]);
-					if(!(tr1.beginSale <= date1 and date1 <= tr1.endSale))continue;
-					dateAndtrainID dat1(date1, stationInformation.trainID);
-					seats s = allseats.FindExac(dat1).first;
-					int num1 = s.seat[stationInformation.num];
-					for(int j = stationInformation.num + 1; j < tr1.stationNum; ++j){
-						if(s.seat[j-1]<num1)num1 = s.seat[j-1];
-						auto alltrain2 = stations.FindAllKey(tr1.stations[j]);
-						for(int k = 0; k < alltrain2.size(); ++k){
-							trainid stationInformation2 = alltrain2[k].ID;
-							train tr2 = trainbank.FindExac(hash(stationInformation2.trainID.ch)).first;
-							bool tr_val = false;
-							int l;
-							for(l = stationInformation2.num + 1; l < tr2.stationNum; ++l){
-								if(tr2.stations[l] == to){
-									tr_val = true;
-									break;
-								}
-							}
-							if(tr_val){
-								if(!(stationInformation.trainID == stationInformation2.trainID)){
-									my_date date2 = date1.add_time(tr1.arriveTime[j]).minus_time(
-										tr2.leaveTime[stationInformation2.num]);
-									if(compare(tr1.arriveTime[j], tr2.leaveTime[stationInformation2.num]))
-										date2.add(1);
-									if(date2 <= tr2.endSale){
-										if(date2 < tr2.beginSale)date2 = tr2.beginSale;
-										dateAndtrainID dat2(date2, stationInformation2.trainID);
-										seats s2 = allseats.FindExac(dat2).first;
-										int num2 = tr2.seatNum;
-										for(int m = stationInformation2.num; m < l; ++m){
-											if(s2.seat[m] < num2)num2 = s2.seat[m];
-										}
-										int key_time = 0, key_cost = 0;
-										key_time = between(date1, date2) * 24 * 60 +
-										           mid(tr1.leaveTime[stationInformation.num], tr2.arriveTime[l]);
-										key_cost =
-											tr1.prices[j] - tr1.prices[stationInformation.num] + tr2.prices[l] -
-											tr2.prices[stationInformation2.num];
-										if(is_ans){
-											if(p == "time"){
-												bool flag = false;
-												if(key_time != ans_time)flag = key_time < ans_time;
-												else if(key_cost != ans_cost)flag = key_cost < ans_cost;
-												else if(!(stationInformation.trainID == ans1.trainID))
-													flag = stationInformation.trainID < ans1.trainID;
-												else flag = stationInformation2.trainID < ans2.trainID;
-												if(flag){
-													ans_cost = key_cost;
-													ans_time = key_time;
-													ans1 = trainInforSortbyTime(stationInformation.trainID, from,
-													                            tr1.stations[j], date1,
-													                            tr1.leaveTime[stationInformation.num],
-													                            tr1.arriveTime[j], tr1.prices[j] -
-													                                                tr1.prices[stationInformation.num],
-													                            num1);
-													ans2 = trainInforSortbyTime(stationInformation2.trainID,
-													                            tr1.stations[j], to, date2,
-													                            tr2.leaveTime[stationInformation2.num],
-													                            tr2.arriveTime[l], tr2.prices[l] -
-													                                                tr2.prices[stationInformation2.num],
-													                            num2);
-												}
-											}
-											else if(p == "cost"){
-												bool flag = false;
-												if(key_cost != ans_cost)flag = key_cost < ans_cost;
-												else if(key_time != ans_time)flag = key_time < ans_time;
-												else if(!(stationInformation.trainID == ans1.trainID))
-													flag = stationInformation.trainID < ans1.trainID;
-												else flag = stationInformation2.trainID < ans2.trainID;
-												if(flag){
-													ans_cost = key_cost;
-													ans_time = key_time;
-													ans1 = trainInforSortbyTime(stationInformation.trainID, from,
-													                            tr1.stations[j], date1,
-													                            tr1.leaveTime[stationInformation.num],
-													                            tr1.arriveTime[j], tr1.prices[j] -
-													                                                tr1.prices[stationInformation.num],
-													                            num1);
-													ans2 = trainInforSortbyTime(stationInformation2.trainID,
-													                            tr1.stations[j], to, date2,
-													                            tr2.leaveTime[stationInformation2.num],
-													                            tr2.arriveTime[l], tr2.prices[l] -
-													                                                tr2.prices[stationInformation2.num],
-													                            num2);
-												}
+				for(int i = 0; i < alltrainto.size(); ++i){
+					stationinfor atf = alltrainto[i];
+					train tr2 = trainbank.FindExac(hash(atf.ID.trainID.ch)).first;
+					for(int j = 0; j < atf.ID.num; j++){
+						auto iter = me.find(tr2.stations[j]);
+						if(iter == me.end())continue;
+						auto firsttrains = iter->second;
+						for(int k = 0; k < firsttrains.size(); ++k){
+							trainID_seat_price_date_time* tspdt = firsttrains.head[k];
+							if(!(tspdt->trainName == atf.ID.trainID)){
+								my_date date2 = tspdt->date.add_time(tspdt->time).minus_time(tr2.leaveTime[j]);
+								if(compare(tspdt->time, tr2.leaveTime[j]))date2.add(1);
+								if(date2 < tr2.endSale){
+									if(date2 < tr2.beginSale)date2 = tr2.beginSale;
+									seats s2 = allseats.FindExac(dateAndtrainID(date2, atf.ID.trainID)).first;
+									int seatNum = tr2.seatNum;
+									for(int l = k; l < atf.ID.num; ++l){
+										seatNum = std::min(seatNum, s2.seat[l]);
+									}
+									int key_time = 0, key_cost = 0;
+									key_time = between(tspdt->date,date2) * 24 * 60 + mid(tspdt->time_to_start,tr2.arriveTime[atf.ID.num]);
+									key_cost = tspdt->price + tr2.prices[atf.ID.num] - tr2.prices[j];
+									if(is_ans){
+										if(p == "time"){
+											bool flag = false;
+											if(key_time != ans_time)flag = key_time < ans_time;
+											else if(key_cost != ans_cost)flag = key_cost < ans_cost;
+											else if(!(tspdt->trainName == ans1.trainID))
+												flag = tspdt->trainName < ans1.trainID;
+											else flag = atf.ID.trainID < ans2.trainID;
+											if(flag){
+												ans_cost = key_cost;
+												ans_time = key_time;
+												ans1 = trainInforSortbyTime(tspdt->trainName, from,
+												                            tr2.stations[j], tspdt->date,
+												                            tspdt->time_to_start,
+												                            tspdt->time, tspdt->price,
+												                            tspdt->seatNum);
+												ans2 = trainInforSortbyTime(atf.ID.trainID,
+												                            tr2.stations[j], to, date2,
+												                            tr2.leaveTime[j],
+												                            tr2.arriveTime[atf.ID.num], tr2.prices[atf.ID.num] -
+												                                               tr2.prices[j],
+												                            seatNum);
 											}
 										}
-										else{
-											is_ans = true;
-											ans_time = key_time;
-											ans_cost = key_cost;
-											ans1 = trainInforSortbyTime(stationInformation.trainID, from,
-											                            tr1.stations[j], date1,
-											                            tr1.leaveTime[stationInformation.num],
-											                            tr1.arriveTime[j], tr1.prices[j] -
-											                                                tr1.prices[stationInformation.num],
-											                            num1);
-											ans2 = trainInforSortbyTime(stationInformation2.trainID, tr1.stations[j],
-											                            to, date2,
-											                            tr2.leaveTime[stationInformation2.num],
-											                            tr2.arriveTime[l], tr2.prices[l] -
-											                                                tr2.prices[stationInformation2.num],
-											                            num2);
+										else if(p == "cost"){
+											bool flag = false;
+											if(key_cost != ans_cost)flag = key_cost < ans_cost;
+											else if(key_time != ans_time)flag = key_time < ans_time;
+											else if(!(tspdt->trainName == ans1.trainID))
+												flag = tspdt->trainName < ans1.trainID;
+											else flag = atf.ID.trainID < ans2.trainID;
+											if(flag){
+												ans_cost = key_cost;
+												ans_time = key_time;
+												ans1 = trainInforSortbyTime(tspdt->trainName, from,
+												                            tr2.stations[j], tspdt->date,
+												                            tspdt->time_to_start,
+												                            tspdt->time, tspdt->price,
+												                            tspdt->seatNum);
+												ans2 = trainInforSortbyTime(atf.ID.trainID,
+												                            tr2.stations[j], to, date2,
+												                            tr2.leaveTime[j],
+												                            tr2.arriveTime[atf.ID.num], tr2.prices[atf.ID.num] -
+												                                                        tr2.prices[j],
+												                            seatNum);
+											}
 										}
+									}
+									else{
+										is_ans = true;
+										ans_time = key_time;
+										ans_cost = key_cost;
+										ans1 = trainInforSortbyTime(tspdt->trainName, from,
+										                            tr2.stations[j], tspdt->date,
+										                            tspdt->time_to_start,
+										                            tspdt->time, tspdt->price,
+										                            tspdt->seatNum);
+										ans2 = trainInforSortbyTime(atf.ID.trainID,
+										                            tr2.stations[j], to, date2,
+										                            tr2.leaveTime[j],
+										                            tr2.arriveTime[atf.ID.num], tr2.prices[atf.ID.num] -
+										                                                        tr2.prices[j],
+										                            seatNum);
 									}
 								}
 							}
